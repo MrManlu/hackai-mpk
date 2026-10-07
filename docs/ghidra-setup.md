@@ -1,61 +1,44 @@
 # Ghidra setup
 
-This procedure gives a clean analysis of the firmware image. **The order of
-the steps matters.** Loading the SVD or running auto-analysis before the
-memory map is complete gives much worse results.
+**The project is built automatically by `make ghidra`** (see
+[tools.md](tools.md)). This page explains why it is built that way and keeps
+the lessons from the manual attempts.
 
-## Requirements
+## Memory map and order of steps
 
-- Ghidra
-- [SVD-Loader-Ghidra](https://github.com/leveldown-security/SVD-Loader-Ghidra)
-- The AT32F415 SVD from [ArteryTek/sdk-csp-at32f4](https://github.com/ArteryTek/sdk-csp-at32f4)
+The early manual attempts failed partly because the memory map was
+incomplete when the SVD was loaded and the analysis was run. The order that
+works, and the one the build script follows, is:
 
-## Steps
+1. Memory blocks for flash and RAM.
+2. Peripherals from the SVD.
+3. Entry points (vector tables).
+4. Auto-analysis.
 
-1. **Import** the image as *Raw Binary*.
-   - Language: `ARM:LE:32:Cortex` (Cortex, little endian).
-   - Base address: `0x08000000`.
-   - **Do not** run auto-analysis yet.
-
-2. **Create the memory map** (*Window → Memory Map*):
-
-   | Block | Start | Size | Permissions |
-   |---|---|---|---|
-   | `flash` | `0x08000000` | `0x40000` | R-X |
-   | `ram` | `0x20000000` | `0x8000` | RW- (uninitialised) |
-   | `flash_mirror` (optional, see below) | `0x00000000` | `0x40000` | R-X |
-
-3. **Load the SVD** with `SVD-Loader.py`. This creates the peripheral blocks
-   and register labels.
-
-4. **Run auto-analysis.**
-
-5. Disassemble from the reset handlers (`0x08004240` for the bootloader,
-   `0x08024F64` for the application) and from the other vector table entries.
+The language is `ARM:LE:32:Cortex` (Thumb only, little endian).
 
 ## Flash mirror at 0x0
 
-Like STM32 parts, the AT32 maps flash at `0x00000000` too, depending on BOOT0.
-Some code may reference that alias.
+Like STM32 parts, the AT32 also maps flash at `0x00000000`, depending on
+BOOT0. In the manual attempts:
 
-- *With* the mirror: about 4000 functions left unanalysed.
-- *Without* the mirror: about 2000 functions left unanalysed.
+- *with* a `flash_mirror` block at `0x0`: about 4000 functions left unanalysed;
+- *without* it: about 2000.
 
-Without the mirror is the better default. Add it only if you find code that
-really jumps or reads below `0x08000000`.
+The firmware does not seem to need the alias, so the build leaves it out. If
+you find code that really jumps or reads below `0x08000000`, add a block for
+it in `config/segments.toml`.
 
 ## Recognising library functions
 
-The firmware seems to use Artery's standard peripheral library (`gpio_bits_set`,
-`spi_i2s_flag_get`, `flash_sector_erase`…). An attempt to identify these
-automatically with **FunctionID** failed. The databases were built from
-the SDK compiled with `arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb` at `-O0`
-and `-O2`, and neither gave any match. The vendor most probably used a
-different compiler (Keil/IAR) or different flags.
+The firmware uses Artery's standard peripheral library (`gpio_bits_set`,
+`spi_i2s_flag_get`, `flash_sector_erase`…). FunctionID databases built from the
+SDK with GCC (`-O0` and `-O2`) gave no matches. That is expected: the firmware
+was built with **IAR** (see [decomp-plan.md](decomp-plan.md#toolchain-fingerprint)),
+which generates different code.
 
-Ideas to try:
+Ideas for M2:
 
-- [ ] Build FunctionID databases with `-Os` / `-O3`, or with Keil ARMCC/ArmClang.
 - [ ] BSim similarity search instead of exact hashes.
 - [ ] Match by constants (peripheral base addresses, flag masks), which is how
       most names so far were assigned by hand.
@@ -64,5 +47,5 @@ Ideas to try:
 
 Tried: GhidrOllama, GhidrAssist and ChatGPT-based Ghidra scripts (with
 DeepSeek-R1, among others). Results were poor on this stripped firmware and
-manual analysis was faster. They may help to name small leaf functions once
-the context (peripherals, strings) is in place.
+manual analysis was faster. Their output should not go into
+`config/symbols.csv` without review.

@@ -22,6 +22,7 @@ Early stage. The table shows the plan, not finished features.
 | Feature | Type | Status |
 |---|---|---|
 | Hardware and stock firmware documentation | Research | 🟡 In progress |
+| Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
 | Safe flashing and recovery method | Foundation | ⚪ Planned |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
@@ -111,14 +112,36 @@ Full details and open questions are in [`docs/`](docs/README.md):
 
 ---
 
+## Analysing the firmware
+
+The analysis is reproducible: the knowledge lives in text files under
+`config/`, and the Ghidra project is rebuilt from them with one command. You
+need Python 3.11, Ghidra 11.3 and 7-Zip (details in
+[docs/tools.md](docs/tools.md)).
+
+```bash
+make setup                                    # Python venv with PyGhidra
+make baserom SRC=/path/to/MPK_mini_Plus_Updater_v1.13.exe
+make ghidra                                   # build build/ghidra/hackai-mpk.gpr
+```
+
+Rename things in Ghidra, then run `make export` to save your names in
+`config/symbols.csv`. The strategy and milestones are in
+[docs/decomp-plan.md](docs/decomp-plan.md).
+
+---
+
 ## Repository layout
 
 ```
 hackai-mpk/
+├── baserom/       # Your copy of the stock firmware (not in git)
+├── config/        # Source of truth: segments, symbols, firmware hash
 ├── docs/          # Reverse-engineering notes, memory map, protocols
+├── tools/         # Scripts: firmware extraction, Ghidra build and export
 ├── firmware/      # Our own code: patches and new features (planned)
-├── tools/         # Scripts to extract, patch, verify and flash (planned)
 ├── hardware/      # Battery mod schematics, PCB and BOM (planned)
+├── Makefile
 ├── LICENSE
 └── README.md
 ```

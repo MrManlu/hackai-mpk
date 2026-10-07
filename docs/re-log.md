@@ -96,7 +96,7 @@ The bootloader and the application each have their own version. The
 application one takes an extra argument, probably pixel polarity.
 Details in [display.md](display.md).
 
-## October 2026: Review of the image layout
+## October 2026: Image layout and toolchain
 
 While writing these docs, a re-check of the image showed:
 
@@ -108,3 +108,13 @@ While writing these docs, a re-check of the image showed:
   of data each, probably presets/settings.
 - The display init is an SSD1306 sequence and the framebuffer is 512 bytes,
   so the panel is probably 128 × 32.
+- The application startup code is the **IAR** runtime (`__iar_program_start`,
+  `__cmain`, `__iar_data_init3`), which explains why FunctionID with GCC-built
+  databases never matched. Decided against matching decompilation (see
+  [decomp-plan.md](decomp-plan.md)).
+- The firmware is the `RT_BIN/130` resource of the v1.13 updater, and the
+  version (`01 13`, BCD) is stored at `0x0803FFF6`.
+- Only four application interrupts have real handlers: SysTick, TMR3, USART1
+  and IRQ 67 (probably USB).
+- The Ghidra project is now built from `config/` by `make ghidra`, seeded with
+  the 94 names from the 2025 project.

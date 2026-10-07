@@ -1,0 +1,60 @@
+# Memory map and segments of the stock firmware.
+# Read by tools/ghidra/build_project.py. Addresses are absolute.
+
+[firmware]
+path = "baserom/firmware.bin"
+base = 0x08000000
+language = "ARM:LE:32:Cortex"
+compiler = "default"
+
+[svd]
+path = "build/svd/AT32F415xx_v2.svd"
+url = "https://raw.githubusercontent.com/ArteryTek/sdk-csp-at32f4/535245f3b5155c18a4998cc7b1a33478604828a9/debug/svd/AT32F415xx_v2.svd"
+sha256 = "28accc92eba89f9e7fc2374dcfc0722f9db00e74928ad620a6f0af8e7438c1e2"
+
+# Segments of the flash image. Each one becomes a Ghidra memory block
+# initialised from the firmware bytes. Only executable ("x") segments are
+# disassembled. Documented in docs/firmware-image.md.
+[[segment]]
+name = "bootloader"
+start = 0x08000000
+end = 0x08005000
+perms = "rx"
+vectors = 0x08000000
+suffix = "_BL"
+
+[[segment]]
+name = "bootloader_copy"
+start = 0x08005000
+end = 0x0800A000
+perms = "r"
+note = "Byte-identical copy of the bootloader, purpose unknown."
+
+[[segment]]
+name = "app"
+start = 0x0800A000
+end = 0x08025D4C
+perms = "rx"
+vectors = 0x0800A000
+suffix = ""
+
+[[segment]]
+name = "free"
+start = 0x08025D4C
+end = 0x08037000
+perms = "r"
+note = "Zero padding. Candidate space for patches."
+
+[[segment]]
+name = "storage"
+start = 0x08037000
+end = 0x08040000
+perms = "r"
+note = "Nine 4 KB blocks with 0x14B bytes of data each (presets/settings?) and a 16-byte trailer."
+
+# Uninitialised memory. Peripherals come from the SVD.
+[[memory]]
+name = "ram"
+start = 0x20000000
+size = 0x8000
+perms = "rw"

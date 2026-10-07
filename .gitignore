@@ -1,4 +1,4 @@
-# Firmware original y volcados: nunca deben subirse al repositorio
+# Stock firmware and dumps: never commit them
 *.bin
 *.hex
 *.dfu
@@ -7,13 +7,21 @@
 dumps/
 original/
 
-# Proyectos de ingeniería inversa
+# Bring-your-own firmware (see baserom/README.md)
+baserom/*
+!baserom/README.md
+
+# Reverse-engineering databases (rebuilt by `make ghidra`)
 *.gpr
 *.rep/
 *.i64
 *.idb
 
-# Compilación
+# Build output
 build/
 *.o
 *.map
+
+# Python
+.venv/
+__pycache__/
