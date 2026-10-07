@@ -11,7 +11,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup baserom check ghidra rebuild export clean distclean
+.PHONY: help setup baserom check ghidra rebuild export report clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -19,6 +19,7 @@ help:
 	@echo "make check               verify baserom/firmware.bin"
 	@echo "make ghidra              build the Ghidra project from config/ (first time)"
 	@echo "make export              write names from Ghidra back to config/symbols.csv"
+	@echo "make report              generate analysis reports in build/reports/"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -51,6 +52,9 @@ ghidra: $(PROJECT)
 
 export: | $(PYTHON)
 	$(PYTHON) tools/ghidra/export_symbols.py
+
+report: | $(PYTHON)
+	$(PYTHON) tools/ghidra/report_peripherals.py
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

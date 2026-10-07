@@ -77,8 +77,9 @@ runtime:
 ### M2 · Automatic map of the firmware
 
 - [ ] Identify IAR runtime and Artery SDK functions (BSim, constant patterns).
-- [ ] Peripheral usage report: for each function, the peripherals it
-      touches, as a first guess of its subsystem.
+- [x] Peripheral usage report: for each function, the peripherals it
+      touches, as a first guess of its subsystem (`make report`, findings in
+      [subsystems.md](subsystems.md)).
 - [x] Interrupt table with handlers (see [firmware-image.md](firmware-image.md)).
 - [ ] Call tree from `main`.
 - [ ] `make progress`: progress report.

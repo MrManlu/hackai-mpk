@@ -32,6 +32,13 @@ Then open `build/ghidra/hackai-mpk.gpr` in Ghidra.
    `config/symbols.csv`.
 3. Review with `git diff config/symbols.csv` and commit.
 
+`make report` writes analysis reports to `build/reports/` (not in git):
+
+- `peripherals.md`: for each peripheral, the functions that use it and which
+  registers they read or write.
+- `peripherals.csv`: for each function, the peripherals it uses directly and
+  through the functions it calls.
+
 When `config/` changes (yours or someone else's), run `make rebuild`. It
 exports first, so nothing is lost, and then builds the project from scratch.
 

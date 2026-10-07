@@ -9,6 +9,7 @@ Reverse-engineering notes for the AKAI MPK Mini Plus.
 | [hardware.md](hardware.md) | MCU, debug header, display wiring and other board-level facts |
 | [firmware-image.md](firmware-image.md) | How to get the firmware from the official updater and how the image is laid out |
 | [ghidra-setup.md](ghidra-setup.md) | Why the Ghidra project is built the way it is, lessons from the manual attempts |
+| [subsystems.md](subsystems.md) | First map of the subsystems (MIDI, LEDs, ADC, timers) |
 | [display.md](display.md) | OLED controller, init sequence and the bootloader/app print routines |
 | [re-log.md](re-log.md) | Chronological research log, including dead ends and lessons learned |
 
