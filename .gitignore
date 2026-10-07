@@ -1,0 +1,19 @@
+# Firmware original y volcados: nunca deben subirse al repositorio
+*.bin
+*.hex
+*.dfu
+*.syx
+*.elf
+dumps/
+original/
+
+# Proyectos de ingeniería inversa
+*.gpr
+*.rep/
+*.i64
+*.idb
+
+# Compilación
+build/
+*.o
+*.map
