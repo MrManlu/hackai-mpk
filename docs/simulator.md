@@ -20,6 +20,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Bootloader draws its "Upgrade / v01.13" screen | ✅ |
 | Bootloader jumps to the application | ✅ |
 | Application boots to its main screen ("PGM1: MPC / BPM: 120") | ✅ |
+| LEDs (shift-register chain on SPI1, PWM brightness) | ✅ see [leds.md](leds.md) |
 | Keys, pads, knobs, MIDI | ⚪ not modelled yet |
 
 ## Files
@@ -32,6 +33,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/quiet.resc` | Silences known, harmless warnings for `make sim` |
 | `sim/peripherals/AT32_CRM.cs` | Clock controller: clocks report ready at once, SysTick follows the configured clock |
 | `sim/peripherals/AT32_OTGFS.cs` | USB OTG stub: the USB initialisation finishes as if no host were connected |
+| `sim/peripherals/ShiftRegisterLeds.cs` | LED chain: 7 shift registers on SPI1, latch on PB4, average brightness per output |
+| `sim/peripherals/SpiRecorder.cs` | Records raw SPI bursts with timestamps, for reverse engineering a bus |
 | `sim/peripherals/SSD1306.cs` | The OLED controller, drawn scaled up with a pixel grid. `spi2.oled AsciiArt` dumps it as text, `spi2.oled Statistics` shows counters and state |
 
 The C# models are compiled by Renode when the script loads them, so there is
@@ -103,8 +106,9 @@ key per row/column pair matters).
       extension before MIDI can be bridged to ALSA.
 - [ ] IOMUX: the AT32 has extra remap registers at offsets `0x28` and `0x2C`
       that the STM32F1 AFIO model does not know.
-- [ ] The first column of the "U" is drawn twice as thick. Stray data in
-      column 0, or a bug in the SSD1306 model?
+- [x] The doubled first column on the OLED: SPI DMA requests re-entered
+      Renode's DMA copy and duplicated bytes. Request lines are now left
+      unconnected (see [leds.md](leds.md)).
 - [ ] `0x40007050` (in PWC, not in the SVD) is written at boot.
 - [ ] Timers and peripheral clocks are fixed at 8 MHz in the `.repl`. The
       application's TMR3 will need the right frequency.

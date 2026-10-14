@@ -24,7 +24,7 @@ on this table.
 MIDI THRU will most likely hook the receive interrupt and queue the received
 bytes for the DMA transmit path.
 
-## Pad LEDs? (SPI1 + DMA)
+## LEDs (SPI1 + DMA): confirmed, see [leds.md](leds.md)
 
 | Address | Uses | Guess |
 |---|---|---|

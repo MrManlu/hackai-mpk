@@ -94,7 +94,9 @@ Details in [simulator.md](simulator.md).
 - [x] SSD1306 model: the bootloader screen shows up in a window (`make sim`).
 - [x] Bootloader jumps to the application.
 - [x] Application boots to its main screen.
-- [ ] Inputs: keys, pads, knobs (keyboard and mouse, or a pygame front end).
+- [x] LEDs: shift-register chain model ([leds.md](leds.md)).
+- [ ] Panel GUI (PySide6, drawn as SVG) connected to Renode over TCP.
+- [ ] Inputs: keys, pads, knobs.
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems

@@ -97,16 +97,17 @@ uart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
 uart5: UART.STM32_UART @ sysbus <0x40005000, +0x100>
     -> nvic@53
 
-// Default STM32F1 DMA request mapping: SPI1_TX -> DMA1 ch3, SPI2_TX -> DMA1 ch5.
+// SPI TX by DMA (SPI1 -> DMA1 ch3, SPI2 -> DMA1 ch5) needs no request line:
+// Renode's DMA copies a memory-to-peripheral block as soon as the channel is
+// enabled. Connecting DMASend makes the SPI re-trigger the DMA in the middle
+// of that copy, which duplicates and shifts bytes.
 spi1: SPI.STM32SPI @ sysbus 0x40013000
     series: STM32Series.F1
     IRQ -> nvic@35
-    DMASend -> dma1@3
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
     series: STM32Series.F1
     IRQ -> nvic@36
-    DMASend -> dma1@5
 
 i2c1: I2C.STM32F1_I2C @ sysbus 0x40005400
     EventInterrupt -> nvic@31

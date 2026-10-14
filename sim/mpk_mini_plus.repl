@@ -10,5 +10,13 @@ oled: Video.SSD1306 @ spi2
     height: 32
     scale: 4
 
+// LEDs: chain of 7 shift registers (56 outputs, active low) on SPI1, TX by
+// DMA1 channel 3. PB4 latches (rising edge), PB9 is probably /OE (kept low).
+// The firmware does 32-level software PWM at 5 kHz. See docs/leds.md.
+leds: Miscellaneous.ShiftRegisterLeds @ spi1
+    bytes: 7
+    activeLow: true
+
 gpioPortB:
+    4 -> leds@0
     14 -> oled@0

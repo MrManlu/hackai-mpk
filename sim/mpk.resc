@@ -7,6 +7,8 @@ $firmware ?= $repo/baserom/firmware.bin
 include $ORIGIN/peripherals/AT32_CRM.cs
 include $ORIGIN/peripherals/AT32_OTGFS.cs
 include $ORIGIN/peripherals/SSD1306.cs
+include $ORIGIN/peripherals/SpiRecorder.cs
+include $ORIGIN/peripherals/ShiftRegisterLeds.cs
 
 mach create "mpk"
 machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl
