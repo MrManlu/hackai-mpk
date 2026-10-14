@@ -1,11 +1,24 @@
 # hackai-mpk
 
-Community firmware and hardware mods for the **AKAI MPK Mini Plus**.
+Community firmware and hardware mods for AKAI MPK mini controllers, starting
+with the **AKAI MPK Mini Plus**.
 
 The goal is to extend what the controller can do without losing what it
 already does well: proper MIDI THRU, pad LEDs driven over MIDI, more
 arpeggiator modes and, as an optional hardware mod, an internal battery with a
 charge indicator on the display.
+
+## Supported models
+
+| Model | Status |
+|---|---|
+| **AKAI MPK Mini Plus** (stock firmware v1.13) | 🟡 Current target: all the work so far |
+| AKAI MPK mini mk3 | ⚪ Planned |
+
+Everything in this repository (docs, tools, simulator) currently refers to the
+MPK Mini Plus. Support for other models, starting with the MPK mini mk3, is
+planned once the MPK Mini Plus work is mature. Their hardware and firmware
+still have to be analysed, so nothing here should be assumed to apply to them.
 
 > [!WARNING]
 > This is an **unofficial** project. It is not affiliated with, sponsored or
@@ -38,7 +51,7 @@ Legend: ✅ done · 🟡 in progress · ⚪ planned
 
 ### 1. MIDI THRU on MIDI OUT
 
-The MPK Mini Plus has 3.5 mm (TRS) MIDI IN and OUT jacks, but whatever comes in
+The MPK Mini Plus has 5-pin DIN MIDI IN and OUT sockets, but whatever comes in
 on MIDI IN is not forwarded to MIDI OUT. The plan is a configurable *soft THRU*:
 
 - **DIN IN → DIN OUT**: forward the physical input.
@@ -95,7 +108,7 @@ Schematics, BOM and build guide will live in `hardware/`.
 
 ---
 
-## The hardware at a glance
+## The hardware at a glance (MPK Mini Plus)
 
 | Item | Value |
 |---|---|
@@ -104,7 +117,7 @@ Schematics, BOM and build guide will live in `hardware/`.
 | Display | SSD1306-compatible OLED, probably 128 × 32, on SPI2 + DMA |
 | Flash layout | 20 KB bootloader (stored twice) + application at `0x0800A000` |
 | Controls | 37 keys, 8 RGB pads, 8 knobs, pitch and modulation wheels |
-| I/O | USB-C, MIDI IN/OUT (TRS), CV/Gate outputs |
+| I/O | USB-C, MIDI IN/OUT (5-pin DIN), CV/Gate outputs |
 
 Full details and open questions are in [`docs/`](docs/README.md):
 [hardware](docs/hardware.md) · [firmware image](docs/firmware-image.md) ·
