@@ -5,6 +5,7 @@ simulated MPK Mini Plus. The OLED shows up in a window.
 
 ```bash
 make sim                  # Renode GUI, the OLED in its own window
+make sim-debug            # same, with every warning (to find missing models)
 make sim-dump SIM_TIME=2  # headless: run 2 virtual seconds, print the OLED as text
 ```
 
@@ -28,6 +29,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/at32f415.repl` | The MCU: memory, NVIC, GPIO, DMA, USART, SPI, I2C, timers. Adapted from Renode's STM32F103 platform |
 | `sim/mpk_mini_plus.repl` | The board: the MCU plus what is wired to it (OLED on SPI2, D/C on PB14) |
 | `sim/mpk.resc` | Startup script: loads the C# models, the platform, the SVD and `baserom/firmware.bin` |
+| `sim/quiet.resc` | Silences known, harmless warnings for `make sim` |
 | `sim/peripherals/AT32_CRM.cs` | Clock controller: clocks report ready at once, SysTick follows the configured clock |
 | `sim/peripherals/AT32_OTGFS.cs` | USB OTG stub: the USB initialisation finishes as if no host were connected |
 | `sim/peripherals/SSD1306.cs` | The OLED controller, drawn scaled up with a pixel grid. `spi2.oled AsciiArt` dumps it as text, `spi2.oled Statistics` shows counters and state |
@@ -56,7 +58,7 @@ the NVIC.
 
 ## The workflow: run, find the blocker, model it
 
-1. `make sim-dump` and look at the log for the place where the firmware is
+1. `make sim-debug` (or `make sim-dump`) and look at the log for the place where the firmware is
    stuck (`cpu PC`) and at the warnings about unimplemented registers.
 2. Find that address in Ghidra: it is usually a loop waiting for a flag.
 3. Model the minimum that releases it (in the `.repl`, or in a C# model).
@@ -96,6 +98,11 @@ key per row/column pair matters).
       at boot and reads `0x1FFFF7E0` (flash size) thousands of times and
       `0x1FFFF806`. Not blocking, but saving presets needs a real model.
 - [ ] Key matrix model: map PC keyboard keys to row/column pairs.
+- [ ] MIDI OUT: the firmware sends USART1 data by DMA (`DMAT`), which
+      Renode's `STM32_UART` does not support. Needs a small UART model or an
+      extension before MIDI can be bridged to ALSA.
+- [ ] IOMUX: the AT32 has extra remap registers at offsets `0x28` and `0x2C`
+      that the STM32F1 AFIO model does not know.
 - [ ] The first column of the "U" is drawn twice as thick. Stray data in
       column 0, or a bug in the SSD1306 model?
 - [ ] `0x40007050` (in PWC, not in the SVD) is written at boot.

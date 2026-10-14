@@ -1,0 +1,10 @@
+# Silence known, harmless warnings for everyday use (`make sim`).
+# `make sim-debug` skips this file and shows everything.
+
+# The pads' LED data goes out on SPI1, which has no model connected yet.
+logLevel 3 spi1
+# SPI2 raises DMA requests after channel 5 has already copied the whole
+# framebuffer (Renode copies memory-to-peripheral blocks at once).
+logLevel 3 dma1
+# Unmodelled registers (FLASH, ADC...): thousands of accesses at boot.
+logLevel 3 sysbus
