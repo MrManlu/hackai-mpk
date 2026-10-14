@@ -1,0 +1,21 @@
+:name: AKAI MPK Mini Plus
+:description: Runs the stock firmware (baserom/firmware.bin) on a simulated MPK Mini Plus.
+
+$repo ?= $ORIGIN/..
+$firmware ?= $repo/baserom/firmware.bin
+
+include $ORIGIN/peripherals/AT32_CRM.cs
+include $ORIGIN/peripherals/SSD1306.cs
+
+mach create "mpk"
+machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl
+
+# Name unmodelled registers in the log (FLASH, ADC, USB OTG...).
+sysbus ApplySVD $repo/build/svd/AT32F415xx_v2.renode.svd
+
+macro reset
+"""
+    sysbus LoadBinary $firmware 0x08000000
+    cpu VectorTableOffset 0x08000000
+"""
+runMacro $reset

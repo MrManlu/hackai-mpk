@@ -1,0 +1,14 @@
+// AKAI MPK Mini Plus main board for Renode: the AT32F415 plus what is wired
+// to it. See docs/hardware.md and docs/display.md for the evidence.
+
+using "at32f415.repl"
+
+// SSD1306 OLED on SPI2. D/C on PB14 (low = command), CS on PB12 and RESET
+// on PB10 are not modelled yet.
+oled: Video.SSD1306 @ spi2
+    width: 128
+    height: 32
+    scale: 4
+
+gpioPortB:
+    14 -> oled@0

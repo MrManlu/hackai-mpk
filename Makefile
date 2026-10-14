@@ -3,15 +3,18 @@
 
 GHIDRA_INSTALL_DIR ?= /opt/ghidra_11.3.1_PUBLIC
 export GHIDRA_INSTALL_DIR
+RENODE ?= /opt/renode_1.17.0-portable/renode
+SIM_TIME ?= 2
 
 PYTHON  := .venv/bin/python
 SVD     := build/svd/AT32F415xx_v2.svd
+SVD_RENODE := build/svd/AT32F415xx_v2.renode.svd
 SVD_URL := $(shell sed -n 's/^url = "\(.*\)"/\1/p' config/segments.toml)
 SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup baserom check ghidra rebuild export report clean distclean
+.PHONY: help setup baserom check ghidra rebuild export report sim sim-dump clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -20,6 +23,8 @@ help:
 	@echo "make ghidra              build the Ghidra project from config/ (first time)"
 	@echo "make export              write names from Ghidra back to config/symbols.csv"
 	@echo "make report              generate analysis reports in build/reports/"
+	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
+	@echo "make sim-dump            run SIM_TIME virtual seconds headless and print the OLED as text"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -44,6 +49,10 @@ $(SVD):
 	echo "$(SVD_SHA)  $@.tmp" | sha256sum -c --quiet
 	mv $@.tmp $@
 
+# Renode rejects the stray whitespace in some <access> fields of Artery's SVD.
+$(SVD_RENODE): $(SVD)
+	sed -E 's#<access>[[:space:]]*([a-zA-Z-]+)[[:space:]]*</access>#<access>\1</access>#g' $< > $@
+
 $(PROJECT): | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check
 	$(PYTHON) tools/ghidra/build_project.py
@@ -55,6 +64,16 @@ export: | $(PYTHON)
 
 report: | $(PYTHON)
 	$(PYTHON) tools/ghidra/report_peripherals.py
+
+sim: $(SVD_RENODE)
+	python3 tools/baserom.py --check
+	$(RENODE) -e 'include @sim/mpk.resc; showAnalyzer spi2.oled; start'
+
+sim-dump: $(SVD_RENODE)
+	python3 tools/baserom.py --check
+	$(RENODE) --disable-gui --console --plain \
+	  -e 'include @sim/mpk.resc; emulation RunFor "$(SIM_TIME)"; cpu PC; spi2.oled AsciiArt; quit' \
+	  </dev/null 2>&1 | tr -d '\r' | grep -E '^(0x|[.#]+$$)'
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

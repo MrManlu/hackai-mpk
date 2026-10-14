@@ -23,6 +23,7 @@ Early stage. The table shows the plan, not finished features.
 |---|---|---|
 | Hardware and stock firmware documentation | Research | 🟡 In progress |
 | Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
+| Simulator (stock firmware in Renode, OLED in a window) | Tooling | 🟡 Bootloader runs |
 | Safe flashing and recovery method | Foundation | ⚪ Planned |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
@@ -126,7 +127,9 @@ make ghidra                                   # build build/ghidra/hackai-mpk.gp
 ```
 
 Rename things in Ghidra, then run `make export` to save your names in
-`config/symbols.csv`. The strategy and milestones are in
+`config/symbols.csv`. `make sim` runs the stock firmware in
+[Renode](https://renode.io) with the OLED in a window
+([docs/simulator.md](docs/simulator.md)). The strategy and milestones are in
 [docs/decomp-plan.md](docs/decomp-plan.md).
 
 ---
@@ -138,6 +141,7 @@ hackai-mpk/
 ├── baserom/       # Your copy of the stock firmware (not in git)
 ├── config/        # Source of truth: segments, symbols, firmware hash
 ├── docs/          # Reverse-engineering notes, memory map, protocols
+├── sim/           # Renode simulator: platform, board and peripheral models
 ├── tools/         # Scripts: firmware extraction, Ghidra build and export
 ├── firmware/      # Our own code: patches and new features (planned)
 ├── hardware/      # Battery mod schematics, PCB and BOM (planned)
@@ -177,7 +181,7 @@ test. Before opening a pull request:
 
 ## License
 
-- **Code** (`firmware/`, `tools/`): [GNU GPL v3.0 or later](LICENSE)
+- **Code** (`firmware/`, `tools/`, `sim/`): [GNU GPL v3.0 or later](LICENSE)
   (`GPL-3.0-or-later`).
 - **Documentation** (`docs/`, this README):
   [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).

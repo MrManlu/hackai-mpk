@@ -84,6 +84,19 @@ runtime:
 - [ ] Call tree from `main`.
 - [ ] `make progress`: progress report.
 
+### SIM · Simulator
+
+Run the stock firmware in Renode to develop and test without the hardware.
+Details in [simulator.md](simulator.md).
+
+- [x] AT32F415 platform and MPK Mini Plus board description.
+- [x] Clock controller model (PLL, SysTick frequency).
+- [x] SSD1306 model: the bootloader screen shows up in a window (`make sim`).
+- [ ] Bootloader jumps to the application.
+- [ ] Application boots to its main screen.
+- [ ] Inputs: keys, pads, knobs (keyboard and mouse, or a pygame front end).
+- [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
+
 ### M3 · Target subsystems
 
 - [ ] MIDI: DIN in/out (UART) and USB MIDI.
