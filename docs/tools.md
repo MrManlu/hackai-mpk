@@ -33,6 +33,10 @@ Then open `build/ghidra/hackai-mpk.gpr` in Ghidra.
    `config/symbols.csv`.
 3. Review with `git diff config/symbols.csv` and commit.
 
+`make decompile F="name 0xADDRESS ..."` prints Ghidra's decompilation of
+functions without opening the GUI. Handy for quick looks, but keep its output
+out of the repository.
+
 `make report` writes analysis reports to `build/reports/` (not in git):
 
 - `peripherals.md`: for each peripheral, the functions that use it and which

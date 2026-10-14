@@ -3,7 +3,7 @@
 // Adapted from Renode's platforms/cpus/stm32f103.repl: the AT32F415 follows
 // the STM32F1 register layout for GPIO, USART, SPI, I2C, timers and DMA.
 // Interrupt numbers come from the AT32F415 SVD. Peripherals without a model
-// (FLASH, ADC, USB OTG...) are logged by name thanks to ApplySVD in mpk.resc.
+// (FLASH, ADC...) are logged by name thanks to ApplySVD in mpk.resc.
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x40000
@@ -153,3 +153,7 @@ timer5: Timers.STM32_Timer @ sysbus 0x40000C00
 // It sets the SysTick frequency from the clock configuration.
 crm: Miscellaneous.AT32_CRM @ sysbus 0x40021000
     nvic: nvic
+
+// USB OTG FS: stub that lets the USB initialisation finish with no host
+// connected (sim/peripherals/AT32_OTGFS.cs). IRQ 67, see docs/firmware-image.md.
+otgfs: USB.AT32_OTGFS @ sysbus 0x50000000

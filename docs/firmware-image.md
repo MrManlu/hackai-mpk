@@ -35,9 +35,9 @@ The file is exactly the size of the MCU flash and maps 1:1 onto
 | File offset | Address | Size | Contents | Status |
 |---|---|---|---|---|
 | `0x00000` | `0x08000000` | 20 KB | **Bootloader** (vector table, flash routines, "Upgrade" screen) | confirmed |
-| `0x05000` | `0x08005000` | 20 KB | Byte-for-byte **copy of the bootloader** | confirmed (purpose unknown) |
+| `0x05000` | `0x08005000` | 20 KB | **Bootloader update payload** (identical copy in v1.13) | confirmed |
 | `0x0A000` | `0x0800A000` | ~111 KB | **Application** (code ends around `0x25D4C`) | confirmed |
-| `0x25D4C` | | | Zero padding | confirmed |
+| `0x25D4C` | | | Zero padding, with the **application-present marker** at `0x0802E7FE`–`0x0802E7FF` | confirmed |
 | `0x37000` | `0x08037000` | 9 × 4 KB | Blocks that each hold `0x14B` bytes of data | hypothesis: programs/presets and settings |
 | `0x3FFF0` | `0x0803FFF0` | 16 B | Trailer `09e80054ff0c0113ffffffffffffb247` | partly known, see below |
 
@@ -71,10 +71,40 @@ which fits a USB update mode.
 
 Open questions:
 
-- [ ] Why is the bootloader stored twice? Backup slot, or an artefact of how
-      the updater builds the image?
+- [x] Why the bootloader is stored twice: it is a bootloader update payload,
+      see [Boot sequence](#boot-sequence).
 - [ ] Format of the data blocks at `0x37000` and of the trailer.
-- [ ] How the bootloader checks the application before jumping to it
-      (checksum/CRC), which matters before flashing a patched image.
+- [x] How the bootloader checks the application before jumping to it: only
+      the two marker bytes, no checksum (see [Boot sequence](#boot-sequence)).
 - [ ] Protocol used by the updater over USB (probably SysEx).
 - [ ] Meaning of the other trailer bytes.
+
+## Boot sequence
+
+Found with the simulator ([simulator.md](simulator.md)) and Ghidra.
+
+**Bootloader** (`bootloader_POSSIBLE_BL`, `0x08003DC8`):
+
+1. Wait 100 ms (5000 SysTick ticks of 20 µs).
+2. If either byte at `0x0802E7FE` / `0x0802E7FF` is `0xFF` (erased flash, no
+   application), enter update mode.
+3. Otherwise read two keys (PC11 + PC13, see [simulator.md](simulator.md#key-matrix-and-power-up-key-combinations)).
+   Both held: update mode.
+4. Otherwise jump to the application reset vector (`0x0800A004` →
+   `0x08024F64`).
+
+There is no checksum of the application. **For patching (M5):** the marker
+bytes sit inside the free area after the application. They must stay
+non-`0xFF`, and patch code must not be placed over them.
+
+**Application** (`main`, `0x080243B4`):
+
+1. Point `VTOR` at `0x0800A000` (`FUN_0802008c`).
+2. **Bootloader self-update:** if the last byte of the bootloader
+   (`0x08004FFF`) differs from the last byte of the payload (`0x08009FFF`) and
+   the payload is not erased, erase the bootloader (2 KB sectors) and copy the
+   20 KB payload over it (`FUN_08024592`). In v1.13 both bytes are `0x04`,
+   probably the bootloader version.
+3. Initialise presets, peripherals and the display.
+4. Check the power-up key combinations (factory test mode, unknown mode).
+5. Normal path: load the current program, initialise the rest, main loop.

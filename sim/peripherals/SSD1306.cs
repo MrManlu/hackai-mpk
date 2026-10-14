@@ -70,13 +70,27 @@ namespace Antmicro.Renode.Peripherals.Video
         {
             if(dataMode)
             {
+                dataBytes++;
+                if(data != 0)
+                {
+                    nonZeroDataBytes++;
+                }
                 WriteData(data);
             }
             else
             {
+                commandBytes++;
                 WriteCommand(data);
             }
             return 0;
+        }
+
+        // Counters and state, for debugging: `spi2.oled Statistics` in the monitor.
+        public string Statistics()
+        {
+            return $"commands: {commandBytes}, data: {dataBytes} ({nonZeroDataBytes} non-zero), "
+                + $"display {(displayOn ? "on" : "off")}, mode {addressingMode}, "
+                + $"page {page} column {column}, D/C {(dataMode ? "data" : "command")}";
         }
 
         public void FinishTransmission()
@@ -270,6 +284,7 @@ namespace Antmicro.Renode.Peripherals.Video
         private readonly List<byte> args;
 
         private bool dataMode;
+        private ulong commandBytes, dataBytes, nonZeroDataBytes;
         private byte? pendingCommand;
         private AddressingMode addressingMode;
         private int columnStart, columnEnd, pageStart, pageEnd;

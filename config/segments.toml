@@ -28,7 +28,7 @@ name = "bootloader_copy"
 start = 0x08005000
 end = 0x0800A000
 perms = "r"
-note = "Byte-identical copy of the bootloader, purpose unknown."
+note = "Bootloader update payload: main copies it over the bootloader when their last bytes differ."
 
 [[segment]]
 name = "app"
@@ -43,7 +43,7 @@ name = "free"
 start = 0x08025D4C
 end = 0x08037000
 perms = "r"
-note = "Zero padding. Candidate space for patches."
+note = "Zero padding. Candidate space for patches. Bytes 0x0802E7FE-0x0802E7FF are the application-present marker: keep them non-0xFF."
 
 [[segment]]
 name = "storage"

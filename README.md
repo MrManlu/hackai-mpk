@@ -36,7 +36,7 @@ Early stage. The table shows the plan, not finished features.
 |---|---|---|
 | Hardware and stock firmware documentation | Research | 🟡 In progress |
 | Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
-| Simulator (stock firmware in Renode, OLED in a window) | Tooling | 🟡 Bootloader runs |
+| Simulator (stock firmware in Renode, OLED in a window) | Tooling | 🟡 Boots to the main screen |
 | Safe flashing and recovery method | Foundation | ⚪ Planned |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
@@ -115,7 +115,7 @@ Schematics, BOM and build guide will live in `hardware/`.
 | MCU | Artery **AT32F415RCT7**: Cortex-M4, 256 KB flash, 32 KB SRAM, LQFP-64 |
 | Debug | Populated SWD/JTAG header on the main board |
 | Display | SSD1306-compatible OLED, probably 128 × 32, on SPI2 + DMA |
-| Flash layout | 20 KB bootloader (stored twice) + application at `0x0800A000` |
+| Flash layout | 20 KB bootloader + 20 KB bootloader update payload + application at `0x0800A000` |
 | Controls | 37 keys, 8 RGB pads, 8 knobs, pitch and modulation wheels |
 | I/O | USB-C, MIDI IN/OUT (5-pin DIN), CV/Gate outputs |
 

@@ -92,8 +92,8 @@ Details in [simulator.md](simulator.md).
 - [x] AT32F415 platform and MPK Mini Plus board description.
 - [x] Clock controller model (PLL, SysTick frequency).
 - [x] SSD1306 model: the bootloader screen shows up in a window (`make sim`).
-- [ ] Bootloader jumps to the application.
-- [ ] Application boots to its main screen.
+- [x] Bootloader jumps to the application.
+- [x] Application boots to its main screen.
 - [ ] Inputs: keys, pads, knobs (keyboard and mouse, or a pygame front end).
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
@@ -115,7 +115,8 @@ Details in [simulator.md](simulator.md).
 
 - [ ] New code in C, built with GCC, linked against `symbols.csv`.
 - [ ] Placed in free flash (~70 KB between `0x08025D4C` and `0x08037000`,
-      to confirm that the bootloader writes it).
+      to confirm that the bootloader writes it), avoiding the
+      application-present marker at `0x0802E7FE`–`0x0802E7FF`.
 - [ ] Hooks (branch patches) into stock functions.
 - [ ] `make patch`: stock image + patches → verified output image.
 - [ ] Differential tests in an emulator (Unicorn): original against

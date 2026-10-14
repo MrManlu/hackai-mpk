@@ -5,17 +5,27 @@ $repo ?= $ORIGIN/..
 $firmware ?= $repo/baserom/firmware.bin
 
 include $ORIGIN/peripherals/AT32_CRM.cs
+include $ORIGIN/peripherals/AT32_OTGFS.cs
 include $ORIGIN/peripherals/SSD1306.cs
 
 mach create "mpk"
 machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl
 
-# Name unmodelled registers in the log (FLASH, ADC, USB OTG...).
+# Name unmodelled registers in the log (FLASH, ADC...).
 sysbus ApplySVD $repo/build/svd/AT32F415xx_v2.renode.svd
 
 macro reset
 """
     sysbus LoadBinary $firmware 0x08000000
     cpu VectorTableOffset 0x08000000
+    # Key matrix columns PC8-PC13 are active-low inputs: high = no key pressed.
+    # The bootloader (PC11 + PC13) and the application (PC8 + PC12,
+    # PC9 + PC13) check key combinations at power-up. See docs/simulator.md.
+    gpioPortC OnGPIO 8 true
+    gpioPortC OnGPIO 9 true
+    gpioPortC OnGPIO 10 true
+    gpioPortC OnGPIO 11 true
+    gpioPortC OnGPIO 12 true
+    gpioPortC OnGPIO 13 true
 """
 runMacro $reset

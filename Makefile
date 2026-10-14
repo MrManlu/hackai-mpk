@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup baserom check ghidra rebuild export report sim sim-dump clean distclean
+.PHONY: help setup baserom check ghidra rebuild export report decompile sim sim-dump clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -22,6 +22,7 @@ help:
 	@echo "make check               verify baserom/firmware.bin"
 	@echo "make ghidra              build the Ghidra project from config/ (first time)"
 	@echo "make export              write names from Ghidra back to config/symbols.csv"
+	@echo "make decompile F=<fn>    print Ghidra's decompilation of functions (names or 0x addresses)"
 	@echo "make report              generate analysis reports in build/reports/"
 	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
 	@echo "make sim-dump            run SIM_TIME virtual seconds headless and print the OLED as text"
@@ -61,6 +62,9 @@ ghidra: $(PROJECT)
 
 export: | $(PYTHON)
 	$(PYTHON) tools/ghidra/export_symbols.py
+
+decompile: | $(PYTHON)
+	@$(PYTHON) tools/ghidra/decompile.py $(F) 2>/dev/null | grep -v '^INFO'
 
 report: | $(PYTHON)
 	$(PYTHON) tools/ghidra/report_peripherals.py
