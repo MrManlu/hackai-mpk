@@ -1,0 +1,50 @@
+# Connects the controls of mpk_mini_plus.svg to the simulator.
+#
+# Everything marked "guess" is unconfirmed: fix it here when you find out
+# (the LED outputs and key matrix panels in the GUI are made for that).
+
+[oled]
+id = "oled"
+width = 128
+height = 32
+color = "#e8f0ff"
+
+# 8 RGB pads. LED outputs of the shift-register chain (docs/leds.md):
+# pad n uses outputs 24 + 3*(n-1) + offset.
+[pads]
+first_output = 24
+# Offset of the red, green and blue channel inside each triplet.
+# Red = 2 is the colour of all pads at power-up with program 1 ("MPC"), seen
+# on the real unit. Green and blue are a guess.
+rgb_offsets = [2, 0, 1]
+# Which triplet (0-7) lights each pad, pad1..pad8. Guess: in order.
+triplet = [0, 1, 2, 3, 4, 5, 6, 7]
+
+# Buttons with a LED. `led` is the output of the shift-register chain,
+# `matrix` is [row, column] in the key matrix (rows PC0-PC3, columns PC8-PC13).
+# Unknown values are left out. Candidates for the LEDs, from the power-up
+# pattern: outputs 1-6, 10, 12, 14, 17, 19, 21, 48-50, 52-54 (18 outputs for
+# 18 buttons).
+[buttons]
+btn_arp = {}
+btn_tap_tempo = {}
+btn_note_repeat = {}
+btn_full_level = {}
+btn_oct_down = {}
+btn_oct_up = {}
+btn_bank = {}
+btn_scales = {}
+btn_chords = {}
+btn_shift = {}
+btn_home = {}
+btn_prog_select = {}
+btn_rewind = {}
+btn_forward = {}
+btn_stop = {}
+btn_play = {}
+btn_rec = {}
+btn_seq = {}
+
+[matrix]
+rows = 4
+columns = 6

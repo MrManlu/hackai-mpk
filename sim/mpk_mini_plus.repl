@@ -20,3 +20,15 @@ leds: Miscellaneous.ShiftRegisterLeds @ spi1
 gpioPortB:
     4 -> leds@0
     14 -> oled@0
+
+// Button matrix: rows PC0-PC3 (outputs, active low), columns PC8-PC13
+// (inputs, active low with pull-ups). Which button sits where is still being
+// mapped (see docs/simulator.md). `keys Press 0 1`, `keys Release 0 1`.
+// Simulator-only: placed at an unused address so the monitor can reach it.
+keys: Miscellaneous.KeyMatrix @ sysbus 0xA0000000
+    rows: 4
+    columns: 6
+    [0-5] -> gpioPortC@[8-13]
+
+gpioPortC:
+    [0-3] -> keys@[0-3]

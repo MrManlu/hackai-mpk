@@ -85,6 +85,30 @@ namespace Antmicro.Renode.Peripherals.Video
             return 0;
         }
 
+        // Visible panel as hex, for front ends: one bit per pixel, rows from
+        // top to bottom, MSB = leftmost pixel. `spi2.oled Framebuffer`.
+        public string Framebuffer()
+        {
+            var text = new System.Text.StringBuilder(panelWidth * panelHeight / 4);
+            for(var y = 0; y < panelHeight; y++)
+            {
+                for(var x = 0; x < panelWidth; x += 8)
+                {
+                    var b = 0;
+                    for(var i = 0; i < 8 && x + i < panelWidth; i++)
+                    {
+                        var lit = displayOn && (entireDisplayOn || (PixelAt(x + i, y) ^ inverted));
+                        if(lit)
+                        {
+                            b |= 0x80 >> i;
+                        }
+                    }
+                    text.Append(b.ToString("X2"));
+                }
+            }
+            return text.ToString();
+        }
+
         // Counters and state, for debugging: `spi2.oled Statistics` in the monitor.
         public string Statistics()
         {

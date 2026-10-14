@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="440" viewBox="0 0 1180 440">
+  <!-- AKAI MPK Mini Plus panel for the hackai-mpk simulator.
+       Drawn for this project (not a photo). Every control has an id that
+       sim/gui/mpk_mini_plus.toml connects to the simulator. -->
+  <defs>
+    <style>
+      .label { font: 600 8px sans-serif; fill: #d8d8d8; text-anchor: middle; }
+      .small { font: 7px sans-serif; fill: #9a9a9a; text-anchor: middle; }
+      .btn { fill: #3a3a3e; stroke: #111; stroke-width: 1; }
+      .pad { fill: #1c1c1e; stroke: #555; stroke-width: 2; }
+      .knob { fill: #1a1a1a; stroke: #444; stroke-width: 2; }
+      .white { fill: #f4f4f2; stroke: #222; stroke-width: 1; }
+      .black { fill: #151515; stroke: #000; stroke-width: 1; }
+    </style>
+  </defs>
+  <rect id="body" x="0" y="0" width="1180" height="440" rx="10" fill="#2a2a2d"/>
+  <rect x="0" y="0" width="14" height="440" rx="6" fill="#c8102e"/>
+  <rect x="1166" y="0" width="14" height="440" rx="6" fill="#c8102e"/>
+  <text x="80" y="40" style="font: 700 15px sans-serif; fill: #eee">MPK Mini Plus</text>
+  <text x="80" y="54" class="small" style="text-anchor: start">hackai-mpk simulator</text>
+  <rect id="pitch_wheel" x="28" y="75" width="38" height="118" rx="8" fill="#1a1a1a" stroke="#555"/>
+  <text class="label" x="47" y="205">PITCH</text>
+  <rect id="mod_wheel" x="78" y="75" width="38" height="118" rx="8" fill="#1a1a1a" stroke="#555"/>
+  <text class="label" x="97" y="205">MOD</text>
+  <circle id="joystick" cx="205" cy="40" r="22" fill="#d01a1a" stroke="#111" stroke-width="2"/>
+  <rect id="btn_arp" class="btn" x="134" y="80" width="44" height="18" rx="3"/>
+  <text class="label" x="156.0" y="108">ARP</text>
+  <rect id="btn_tap_tempo" class="btn" x="192" y="80" width="44" height="18" rx="3"/>
+  <text class="label" x="214.0" y="108">TAP TEMPO</text>
+  <rect id="btn_note_repeat" class="btn" x="134" y="120" width="44" height="18" rx="3"/>
+  <text class="label" x="156.0" y="148">NOTE REPEAT</text>
+  <rect id="btn_full_level" class="btn" x="192" y="120" width="44" height="18" rx="3"/>
+  <text class="label" x="214.0" y="148">FULL LEVEL</text>
+  <rect id="btn_oct_down" class="btn" x="134" y="160" width="44" height="18" rx="3"/>
+  <text class="label" x="156.0" y="188">OCT -</text>
+  <rect id="btn_oct_up" class="btn" x="192" y="160" width="44" height="18" rx="3"/>
+  <text class="label" x="214.0" y="188">OCT +</text>
+  <rect id="pad1" class="pad" x="252" y="108" width="66" height="66" rx="5"/>
+  <text class="small" x="266" y="105">PAD 1</text>
+  <rect id="pad2" class="pad" x="326" y="108" width="66" height="66" rx="5"/>
+  <text class="small" x="340" y="105">PAD 2</text>
+  <rect id="pad3" class="pad" x="400" y="108" width="66" height="66" rx="5"/>
+  <text class="small" x="414" y="105">PAD 3</text>
+  <rect id="pad4" class="pad" x="474" y="108" width="66" height="66" rx="5"/>
+  <text class="small" x="488" y="105">PAD 4</text>
+  <rect id="pad5" class="pad" x="252" y="26" width="66" height="66" rx="5"/>
+  <text class="small" x="266" y="23">PAD 5</text>
+  <rect id="pad6" class="pad" x="326" y="26" width="66" height="66" rx="5"/>
+  <text class="small" x="340" y="23">PAD 6</text>
+  <rect id="pad7" class="pad" x="400" y="26" width="66" height="66" rx="5"/>
+  <text class="small" x="414" y="23">PAD 7</text>
+  <rect id="pad8" class="pad" x="474" y="26" width="66" height="66" rx="5"/>
+  <text class="small" x="488" y="23">PAD 8</text>
+  <rect id="oled_frame" x="560" y="22" width="208" height="60" rx="3" fill="#000" stroke="#444"/>
+  <rect id="oled" x="564" y="26" width="200" height="50" fill="#000"/>
+  <circle id="encoder" cx="805" cy="52" r="22" class="knob"/>
+  <text class="small" x="805" y="88">PUSH TO ENTER</text>
+  <rect id="btn_bank" class="btn" x="572" y="105" width="50" height="18" rx="3"/>
+  <text class="label" x="597.0" y="133">BANK A/B</text>
+  <rect id="btn_scales" class="btn" x="638" y="105" width="50" height="18" rx="3"/>
+  <text class="label" x="663.0" y="133">SCALES</text>
+  <rect id="btn_chords" class="btn" x="704" y="105" width="50" height="18" rx="3"/>
+  <text class="label" x="729.0" y="133">CHORDS</text>
+  <rect id="btn_shift" class="btn" x="572" y="145" width="50" height="18" rx="3"/>
+  <text class="label" x="597.0" y="173">SHIFT</text>
+  <rect id="btn_home" class="btn" x="638" y="145" width="50" height="18" rx="3"/>
+  <text class="label" x="663.0" y="173">HOME / SAVE</text>
+  <rect id="btn_prog_select" class="btn" x="704" y="145" width="50" height="18" rx="3"/>
+  <text class="label" x="729.0" y="173">PROG SELECT</text>
+  <circle id="knob1" class="knob" cx="880" cy="46" r="22"/>
+  <line x1="880" y1="46" x2="880" y2="28" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="880" y="20">K1</text>
+  <circle id="knob2" class="knob" cx="950" cy="46" r="22"/>
+  <line x1="950" y1="46" x2="950" y2="28" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="950" y="20">K2</text>
+  <circle id="knob3" class="knob" cx="1020" cy="46" r="22"/>
+  <line x1="1020" y1="46" x2="1020" y2="28" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="1020" y="20">K3</text>
+  <circle id="knob4" class="knob" cx="1090" cy="46" r="22"/>
+  <line x1="1090" y1="46" x2="1090" y2="28" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="1090" y="20">K4</text>
+  <circle id="knob5" class="knob" cx="880" cy="110" r="22"/>
+  <line x1="880" y1="110" x2="880" y2="92" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="880" y="84">K5</text>
+  <circle id="knob6" class="knob" cx="950" cy="110" r="22"/>
+  <line x1="950" y1="110" x2="950" y2="92" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="950" y="84">K6</text>
+  <circle id="knob7" class="knob" cx="1020" cy="110" r="22"/>
+  <line x1="1020" y1="110" x2="1020" y2="92" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="1020" y="84">K7</text>
+  <circle id="knob8" class="knob" cx="1090" cy="110" r="22"/>
+  <line x1="1090" y1="110" x2="1090" y2="92" stroke="#ddd" stroke-width="2"/>
+  <text class="small" x="1090" y="84">K8</text>
+  <rect id="btn_rewind" class="btn" x="862" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="881.0" y="188">&lt;&lt;</text>
+  <rect id="btn_forward" class="btn" x="908" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="927.0" y="188">&gt;&gt;</text>
+  <rect id="btn_stop" class="btn" x="954" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="973.0" y="188">STOP</text>
+  <rect id="btn_play" class="btn" x="1000" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="1019.0" y="188">PLAY</text>
+  <rect id="btn_rec" class="btn" x="1046" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="1065.0" y="188">REC</text>
+  <rect id="btn_seq" class="btn" x="1092" y="160" width="38" height="18" rx="3"/>
+  <text class="label" x="1111.0" y="188">SEQ</text>
+  <rect id="key0" class="white" x="22.0" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key2" class="white" x="73.6" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key4" class="white" x="125.3" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key5" class="white" x="176.9" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key7" class="white" x="228.5" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key9" class="white" x="280.2" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key11" class="white" x="331.8" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key12" class="white" x="383.5" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key14" class="white" x="435.1" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key16" class="white" x="486.7" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key17" class="white" x="538.4" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key19" class="white" x="590.0" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key21" class="white" x="641.6" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key23" class="white" x="693.3" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key24" class="white" x="744.9" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key26" class="white" x="796.5" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key28" class="white" x="848.2" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key29" class="white" x="899.8" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key31" class="white" x="951.5" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key33" class="white" x="1003.1" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key35" class="white" x="1054.7" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key36" class="white" x="1106.4" y="212" width="51.6" height="220" rx="3"/>
+  <rect id="key1" class="black" x="58.1" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key3" class="black" x="109.8" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key6" class="black" x="213.1" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key8" class="black" x="264.7" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key10" class="black" x="316.3" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key13" class="black" x="419.6" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key15" class="black" x="471.2" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key18" class="black" x="574.5" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key20" class="black" x="626.1" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key22" class="black" x="677.8" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key25" class="black" x="781.1" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key27" class="black" x="832.7" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key30" class="black" x="936.0" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key32" class="black" x="987.6" y="212" width="31.0" height="132" rx="2"/>
+  <rect id="key34" class="black" x="1039.2" y="212" width="31.0" height="132" rx="2"/>
+</svg>
