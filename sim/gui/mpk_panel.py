@@ -234,9 +234,24 @@ class PanelView(QGraphicsView):
             scene.addItem(item)
             self.buttons[name] = (item, info)
 
+    LEGEND = "Click: press  ·  Right-click: hold / release  (SHIFT: until the next button)"
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
+
+    def drawForeground(self, painter, rect):
+        # Usage hint in the bottom-right corner of the view, in viewport
+        # coordinates so it stays put whatever the zoom.
+        painter.save()
+        painter.resetTransform()
+        painter.setPen(QColor(150, 150, 155))
+        font = painter.font()
+        font.setPointSizeF(8.5)
+        painter.setFont(font)
+        area = self.viewport().rect().adjusted(0, 0, -10, -6)
+        painter.drawText(area, Qt.AlignRight | Qt.AlignBottom, self.LEGEND)
+        painter.restore()
 
     def press_button(self, name, matrix, down):
         if matrix is None:
