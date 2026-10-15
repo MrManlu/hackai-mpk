@@ -21,30 +21,33 @@ rgb_offsets = [2, 0, 1]
 triplet = [0, 1, 2, 3, 4, 5, 6, 7]
 
 # Buttons with a LED. `led` is the output of the shift-register chain,
-# `matrix` is [row, column] in the key matrix (rows PC0-PC3, columns PC8-PC13).
-# Unknown values are left out. Candidates for the LEDs, from the power-up
-# pattern: outputs 1-6, 10, 12, 14, 17, 19, 21, 48-50, 52-54 (18 outputs for
-# 18 buttons).
+# `matrix` is [row, column] in the key matrix (row 0-12 selected through a
+# decoder on PC0-PC3, columns PC8-PC13). Found with `make matrix-sweep`:
+#   confirmed  = the screen names the function (Arp Setup, Note Repeat, Load
+#                Program) or the behaviour is unambiguous
+#   order      = follows the button order on the panel; behaviour fits
+#   guess      = by elimination
+# Rows 10-12 hold the 18 buttons; rows 0-9 show no visible effect (keybed?).
 [buttons]
-btn_arp = {}
-btn_tap_tempo = {}
-btn_note_repeat = {}
-btn_full_level = {}
-btn_oct_down = {}
-btn_oct_up = {}
-btn_bank = {}
-btn_scales = {}
-btn_chords = {}
-btn_shift = {}
-btn_home = {}
-btn_prog_select = {}
-btn_rewind = {}
-btn_forward = {}
-btn_stop = {}
-btn_play = {}
-btn_rec = {}
-btn_seq = {}
+btn_arp = { matrix = [10, 0], led = 54 }          # confirmed: "Arp Setup", LED on after release
+btn_tap_tempo = { matrix = [10, 1], led = 53 }    # order (no visible effect on a single press); LED 53 blinks: guess
+btn_note_repeat = { matrix = [10, 2], led = 52 }  # confirmed: "Note Repeat"
+btn_full_level = { matrix = [10, 3], led = 50 }   # order: LED toggles
+btn_oct_down = { matrix = [10, 4], led = 49 }     # order: LED lit after press
+btn_oct_up = { matrix = [10, 5], led = 48 }       # order: LED lit after press
+btn_bank = { matrix = [11, 0], led = 21 }         # confirmed: LED 21 off and 22 on (bank A/B, two colours?)
+btn_scales = { matrix = [11, 1], led = 19 }       # order: LED toggles
+btn_chords = { matrix = [11, 2], led = 17 }       # order: LED toggles
+btn_shift = { matrix = [11, 3], led = 14 }        # confirmed: LED lit only while held
+btn_home = { matrix = [11, 4], led = 12 }         # order (no change on the home screen); LED by elimination
+btn_prog_select = { matrix = [11, 5], led = 10 }  # confirmed: "Load Program / Press a pad"
+btn_rewind = { matrix = [12, 0] }                 # order; LED one of 2-6
+btn_forward = { matrix = [12, 1] }                # order; LED one of 2-6
+btn_stop = { matrix = [12, 2] }                   # order; LED one of 2-6
+btn_play = { matrix = [12, 3] }                   # order; LED one of 2-6
+btn_rec = { matrix = [12, 4] }                    # order; LED one of 2-6
+btn_seq = { matrix = [12, 5], led = 1 }           # order: LED toggles
 
 [matrix]
-rows = 4
+rows = 13
 columns = 6

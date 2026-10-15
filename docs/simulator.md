@@ -23,7 +23,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Bootloader jumps to the application | ✅ |
 | Application boots to its main screen ("PGM1: MPC / BPM: 120") | ✅ |
 | LEDs (shift-register chain on SPI1, PWM brightness) | ✅ see [leds.md](leds.md) |
-| Button matrix (rows PC0–PC3, columns PC8–PC13) | ✅ model; which button is where: to map |
+| Key matrix (decoder on PC0–PC3, columns PC8–PC13) | ✅ model; 18 buttons mapped (rows 10–12) |
 | Panel GUI (PySide6) | ✅ OLED, pad and LED outputs, matrix explorer |
 | Keybed, pads (velocity), knobs, wheels, joystick, MIDI | ⚪ not modelled yet |
 
@@ -39,7 +39,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/peripherals/AT32_OTGFS.cs` | USB OTG stub: the USB initialisation finishes as if no host were connected |
 | `sim/peripherals/ShiftRegisterLeds.cs` | LED chain: 7 shift registers on SPI1, latch on PB4, average brightness per output |
 | `sim/peripherals/SpiRecorder.cs` | Records raw SPI bursts with timestamps, for reverse engineering a bus |
-| `sim/peripherals/KeyMatrix.cs` | Button matrix: rows driven by the firmware, columns read back; `keys Press r c` / `keys Release r c` |
+| `sim/peripherals/KeyMatrix.cs` | Key matrix behind a row decoder (PC0–PC3 select row 0–12, PC8–PC13 read columns); `keys Press r c` / `keys Release r c` |
+| `sim/scripts/matrix_sweep.py` | `make matrix-sweep`: presses every position on a fresh boot and reports what changes (`build/reports/matrix_sweep.md`) |
 | `sim/gui/mpk_panel.py` | The panel GUI: starts Renode with its monitor on TCP and polls the OLED and LEDs |
 | `sim/gui/mpk_mini_plus.svg` | The panel drawing. Every control has an `id`; editable in Inkscape |
 | `sim/gui/mpk_mini_plus.toml` | Connects SVG ids to the simulator: pad LED channels, button LEDs and matrix positions |
@@ -85,22 +86,44 @@ Blockers found so far:
 | Bootloader stays in update mode: unpressed keys read 0 | `KeyMatrix` model: columns read high when no key is pressed |
 | Application waits for the USB core reset (`GRSTCTL.AHBIDL`, `CSFTRST`) | `AT32_OTGFS` stub |
 | Application enters the factory test mode (version screen) | Same as above: keys released |
+| After `machine Reset` the bootloader always entered update mode | `KeyMatrix` re-drives its columns on every change (the GPIO port forgets them on reset) |
 | OLED picture scrolls after pressing a key | Model the OLED chip select (PB12): the 3 bytes sent on each key event belong to another SPI2 device (CV DAC?) |
 
 ### Key matrix and power-up key combinations
 
-Rows PC0–PC3 are outputs, columns PC8–PC13 are active-low inputs. Both the
-bootloader and the application drive a row pattern on GPIOC, wait, and read
-two columns. Both columns low (both keys held) selects a special mode:
+The keys are read through a **row decoder**: the firmware writes a row
+number (0–12) on PC0–PC3, a decoder (74HC154-style) pulls that row low, and
+PC8–PC13 read 6 active-low columns. In normal operation it counts 0, 1, …, 12
+over and over, reading the columns two or three times per row. That gives
+**13 × 6 = 78 positions**:
 
-| Who | Rows written | Columns | Effect |
-|---|---|---|---|
-| Bootloader | `GPIOC = 0xB` (PC2 low) | PC11 + PC13 | USB **update mode** ("Upgrade" screen) |
-| Application (`main`) | `GPIOC = 0xA` (PC0, PC2 low) | PC8 + PC12 | **Factory test mode**: version screen "Ver:Y01-13", serial-like strings, own main loop (`FUN_08012d6a`) |
-| Application (`main`) | `GPIOC = 0xA` | PC9 + PC13 | Calls `FUN_0801fe1a`, unknown (factory reset?) |
+| Rows | What | Evidence |
+|---|---|---|
+| 0–9 | Probably the keybed (37 keys; velocity usually needs two contacts per key) | No visible effect when pressed (`make matrix-sweep`) |
+| 10–12 | The 18 buttons | LEDs and screens change; see the map below |
 
-Which physical keys these are is still to be found (they share rows, so the
-key per row/column pair matters).
+Button map, also in `sim/gui/mpk_mini_plus.toml` (C = confirmed by the screen
+or an unambiguous behaviour, O = follows the panel order):
+
+| Row | Col 0 (PC8) | Col 1 (PC9) | Col 2 (PC10) | Col 3 (PC11) | Col 4 (PC12) | Col 5 (PC13) |
+|---|---|---|---|---|---|---|
+| 10 | ARP (C), LED 54 | TAP TEMPO (O), LED 53? | NOTE REPEAT (C), LED 52 | FULL LEVEL (O), LED 50 | OCT − (O), LED 49 | OCT + (O), LED 48 |
+| 11 | BANK A/B (C), LEDs 21/22 | SCALES (O), LED 19 | CHORDS (O), LED 17 | SHIFT (C), LED 14 | HOME/SAVE (O), LED 12? | PROG SELECT (C), LED 10 |
+| 12 | ⏪ (O) | ⏩ (O) | STOP (O) | PLAY (O) | REC (O) | SEQ (O), LED 1 |
+
+The transport LEDs are among outputs 2–6, not yet assigned. BANK A/B swaps
+output 21 for 22: probably one LED in two colours.
+
+Power-up combinations (both keys held while the firmware checks):
+
+| Who | Row | Columns | Buttons (from the map) | Effect |
+|---|---|---|---|---|
+| Bootloader | 11 (`GPIOC = 0xB`) | PC11 + PC13 | SHIFT + PROG SELECT | USB **update mode** ("Upgrade" screen) |
+| Application (`main`) | 10 (`GPIOC = 0xA`) | PC8 + PC12 | ARP + OCT − | **Factory test mode**: version screen "Ver:Y01-13", own main loop (`FUN_08012d6a`) |
+| Application (`main`) | 10 | PC9 + PC13 | TAP TEMPO + OCT + | Calls `FUN_0801fe1a`, unknown (factory reset?) |
+
+These button names come from the map above, so they are as good as its
+"O" entries. Check them on the real unit before relying on them.
 
 ## Open questions
 
@@ -109,9 +132,9 @@ key per row/column pair matters).
 - [ ] FLASH controller and system memory: the application unlocks the flash
       at boot and reads `0x1FFFF7E0` (flash size) thousands of times and
       `0x1FFFF806`. Not blocking, but saving presets needs a real model.
-- [ ] Map which button sits at each matrix position and which LED output
-      each button uses (GUI: "Key matrix" and "LED outputs" panels), and
-      record them in `sim/gui/mpk_mini_plus.toml`.
+- [x] Map buttons to matrix positions and LED outputs (first pass, see
+      above; "O" entries and the transport LEDs still to confirm).
+- [ ] Rows 0-9: the keybed? Find how velocity is measured.
 - [ ] MIDI OUT: the firmware sends USART1 data by DMA (`DMAT`), which
       Renode's `STM32_UART` does not support. Needs a small UART model or an
       extension before MIDI can be bridged to ALSA.

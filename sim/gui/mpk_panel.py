@@ -265,7 +265,7 @@ class MatrixPanel(QWidget):
         for c in range(columns):
             layout.addWidget(QLabel(f"PC{8 + c}", alignment=Qt.AlignCenter), 0, c + 1)
         for r in range(rows):
-            layout.addWidget(QLabel(f"PC{r}"), r + 1, 0)
+            layout.addWidget(QLabel(f"row {r}"), r + 1, 0)
             for c in range(columns):
                 button = QPushButton(f"{r},{c}")
                 button.pressed.connect(lambda r=r, c=c: monitor.send(f"keys Press {r} {c}"))

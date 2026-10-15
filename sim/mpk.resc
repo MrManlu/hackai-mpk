@@ -21,5 +21,8 @@ macro reset
 """
     sysbus LoadBinary $firmware 0x08000000
     cpu VectorTableOffset 0x08000000
+    # GPIO ports forget the key matrix column levels on reset: drive them
+    # again, or the bootloader sees two keys held (update mode).
+    keys Reset
 """
 runMacro $reset

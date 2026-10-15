@@ -23,12 +23,13 @@ gpioPortB:
     12 -> oled@1
     14 -> oled@0
 
-// Button matrix: rows PC0-PC3 (outputs, active low), columns PC8-PC13
-// (inputs, active low with pull-ups). Which button sits where is still being
-// mapped (see docs/simulator.md). `keys Press 0 1`, `keys Release 0 1`.
+// Key matrix: the firmware puts a row number (0-12) on PC0-PC3, a decoder
+// selects that row, and PC8-PC13 read the 6 columns (active low).
+// 13 x 6 = 78 positions: buttons and probably the keybed (two contacts per
+// key for velocity). See docs/simulator.md. `keys Press 10 2`.
 // Simulator-only: placed at an unused address so the monitor can reach it.
 keys: Miscellaneous.KeyMatrix @ sysbus 0xA0000000
-    rows: 4
+    addressBits: 4
     columns: 6
     [0-5] -> gpioPortC@[8-13]
 

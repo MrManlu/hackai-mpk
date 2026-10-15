@@ -36,14 +36,15 @@ they are sent.
 | Outputs | Bytes | Function | Status |
 |---|---|---|---|
 | 24–47 | 3–5 | **8 RGB pad LEDs**, one triplet of outputs per pad | Strong hypothesis: at power-up every 3rd output (26, 29, …, 47) is fully on, so all pads show the same colour |
-| 0–23, 48–55 | 0–2, 6 | Button LEDs | Hypothesis: at power-up 17 of them are at 4/32 (dim backlight) and output 21 is fully on |
+| 0–23, 48–55 | 0–2, 6 | Button LEDs | At power-up 17 of them are at 4/32 (dim backlight) and output 21 (BANK A) is fully on. Map in [simulator.md](simulator.md#key-matrix-and-power-up-key-combinations) |
 
 To find out:
 
 - [ ] Which channel of each triplet is red, green and blue. Knowing the colour
       of the pads at power-up identifies the channel at offset 2.
 - [ ] Which pad each triplet belongs to (press pads in the simulator and watch).
-- [ ] Which button each other output belongs to.
+- [x] Which button each other output belongs to: first pass done with
+      `make matrix-sweep` (transport LEDs among 2–6 still to assign).
 - [ ] Where the firmware computes the 224-byte buffer from the colours (the
       hook for MIDI feedback on the pads).
 
@@ -51,6 +52,10 @@ To find out:
 
 `sim/peripherals/ShiftRegisterLeds.cs` shifts the SPI bytes, latches them on
 PB4 and averages each output over virtual time:
+
+The model averages over whole PWM cycles (64 latches = 2 cycles of 32
+phases). An earlier version used a fixed 20 ms window, not a multiple of the
+6.4 ms cycle, and steady LEDs seemed to flicker between 12 and 16 %.
 
 ```
 (mpk) spi1.leds Show          # text bars per byte

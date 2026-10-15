@@ -7,7 +7,7 @@
 // input (GPIO 0), the chain is copied to the outputs. The firmware does
 // software PWM by latching different patterns many times per second, so the
 // model integrates each output over virtual time and reports its average
-// brightness, as an eye would see it.
+// brightness over the last `windowLatches` latches, as an eye would see it.
 //
 // Output numbering: output k is bit (7 - k % 8) of byte k / 8, counting the
 // bytes in the order they are sent in one transfer. `activeLow`: a 0 bit
@@ -32,11 +32,11 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
 {
     public class ShiftRegisterLeds : ISPIPeripheral, IGPIOReceiver
     {
-        public ShiftRegisterLeds(IMachine machine, int bytes = 7, bool activeLow = true, double windowMs = 20)
+        public ShiftRegisterLeds(IMachine machine, int bytes = 7, bool activeLow = true, int windowLatches = 64)
         {
             this.machine = machine;
             this.activeLow = activeLow;
-            windowSeconds = windowMs / 1000;
+            this.windowLatches = windowLatches;
             chain = new byte[bytes];
             latched = new byte[bytes];
             onTime = new double[bytes * 8];
@@ -62,7 +62,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         {
             if(number == 0 && value && !latch)
             {
-                Accumulate();
+                Accumulate(true);
                 Array.Copy(chain, latched, chain.Length);
             }
             if(number == 0)
@@ -81,13 +81,13 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 latched[i] = activeLow ? (byte)0xFF : (byte)0x00;
             }
             latch = false;
+            latchesInWindow = 0;
             windowStart = lastLatch = Now;
         }
 
         // Average brightness (0.0-1.0) of each output over the last window.
         public double[] GetBrightness()
         {
-            Accumulate();
             return (double[])brightness.Clone();
         }
 
@@ -121,8 +121,11 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         private double Now => machine.LocalTimeSource.ElapsedVirtualTime.TotalSeconds;
 
         // Adds the time since the last latch to every output that was lit,
-        // and closes the averaging window when it is full.
-        private void Accumulate()
+        // and closes the averaging window after `windowLatches` latches. The
+        // window must hold whole PWM cycles (the firmware uses 32 phases),
+        // otherwise the average jumps from one window to the next and steady
+        // LEDs seem to flicker.
+        private void Accumulate(bool latching)
         {
             var now = Now;
             var elapsed = now - lastLatch;
@@ -135,10 +138,15 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 }
             }
             lastLatch = now;
+            if(latching)
+            {
+                latchesInWindow++;
+            }
 
             var window = now - windowStart;
-            if(window >= windowSeconds)
+            if(latchesInWindow >= windowLatches && window > 0)
             {
+                latchesInWindow = 0;
                 for(var k = 0; k < onTime.Length; k++)
                 {
                     brightness[k] = onTime[k] / window;
@@ -150,7 +158,8 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
 
         private readonly IMachine machine;
         private readonly bool activeLow;
-        private readonly double windowSeconds;
+        private readonly int windowLatches;
+        private int latchesInWindow;
         private readonly byte[] chain;
         private readonly byte[] latched;
         private readonly double[] onTime;
