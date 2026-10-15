@@ -20,7 +20,8 @@ rgb_offsets = [2, 0, 1]
 # Which triplet (0-7) lights each pad, pad1..pad8. Guess: in order.
 triplet = [0, 1, 2, 3, 4, 5, 6, 7]
 
-# Buttons with a LED. `led` is the output of the shift-register chain,
+# Buttons with a LED. `led` is the output of the shift-register chain, or a
+# table of outputs per colour for multi-colour LEDs ({ red = 21, green = 22 }),
 # `matrix` is [row, column] in the key matrix (row 0-12 selected through a
 # decoder on PC0-PC3, columns PC8-PC13). Found with `make matrix-sweep`:
 #   confirmed  = the screen names the function (Arp Setup, Note Repeat, Load
@@ -35,7 +36,7 @@ btn_note_repeat = { matrix = [10, 2], led = 52 }  # confirmed: "Note Repeat"
 btn_full_level = { matrix = [10, 3], led = 50 }   # order: LED toggles
 btn_oct_down = { matrix = [10, 4], led = 49 }     # order: LED lit after press
 btn_oct_up = { matrix = [10, 5], led = 48 }       # order: LED lit after press
-btn_bank = { matrix = [11, 0], led = 21 }         # confirmed: LED 21 off and 22 on (bank A/B, two colours?)
+btn_bank = { matrix = [11, 0], led = { red = 21, green = 22 } }  # confirmed on the real unit: red = bank A, green = bank B
 btn_scales = { matrix = [11, 1], led = 19 }       # order: LED toggles
 btn_chords = { matrix = [11, 2], led = 17 }       # order: LED toggles
 btn_shift = { matrix = [11, 3], led = 14 }        # confirmed: LED lit only while held

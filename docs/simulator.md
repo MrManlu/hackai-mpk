@@ -108,11 +108,12 @@ or an unambiguous behaviour, O = follows the panel order):
 | Row | Col 0 (PC8) | Col 1 (PC9) | Col 2 (PC10) | Col 3 (PC11) | Col 4 (PC12) | Col 5 (PC13) |
 |---|---|---|---|---|---|---|
 | 10 | ARP (C), LED 54 | TAP TEMPO (O), LED 53? | NOTE REPEAT (C), LED 52 | FULL LEVEL (O), LED 50 | OCT − (O), LED 49 | OCT + (O), LED 48 |
-| 11 | BANK A/B (C), LEDs 21/22 | SCALES (O), LED 19 | CHORDS (O), LED 17 | SHIFT (C), LED 14 | HOME/SAVE (O), LED 12? | PROG SELECT (C), LED 10 |
+| 11 | BANK A/B (C), LED red 21 / green 22 | SCALES (O), LED 19 | CHORDS (O), LED 17 | SHIFT (C), LED 14 | HOME/SAVE (O), LED 12? | PROG SELECT (C), LED 10 |
 | 12 | ⏪ (O) | ⏩ (O) | STOP (O) | PLAY (O) | REC (O) | SEQ (O), LED 1 |
 
-The transport LEDs are among outputs 2–6, not yet assigned. BANK A/B swaps
-output 21 for 22: probably one LED in two colours.
+The transport LEDs are among outputs 2–6, not yet assigned. BANK A/B is a
+two-colour LED: output 21 is red (bank A), 22 green (bank B), confirmed on the
+real unit.
 
 Power-up combinations (both keys held while the firmware checks):
 

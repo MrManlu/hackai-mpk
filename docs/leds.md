@@ -38,6 +38,12 @@ they are sent.
 | 24–47 | 3–5 | **8 RGB pad LEDs**, one triplet of outputs per pad | Strong hypothesis: at power-up every 3rd output (26, 29, …, 47) is fully on, so all pads show the same colour |
 | 0–23, 48–55 | 0–2, 6 | Button LEDs | At power-up 17 of them are at 4/32 (dim backlight) and output 21 (BANK A) is fully on. Map in [simulator.md](simulator.md#key-matrix-and-power-up-key-combinations) |
 
+Confirmed colours:
+
+| Outputs | LED | Evidence |
+|---|---|---|
+| 21 / 22 | BANK A/B button, **red / green** | Real unit: the button turns from red (bank A) to green (bank B). Simulator: pressing it swaps output 21 for 22 and back |
+
 To find out:
 
 - [ ] Which channel of each triplet is red, green and blue. Knowing the colour

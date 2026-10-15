@@ -247,9 +247,16 @@ class PanelView(QGraphicsView):
                                   min(220, 60 + level * 2) if level else 0))
         for item, info in self.buttons.values():
             led = info.get("led")
-            if led is not None:
+            if isinstance(led, int):
+                # Single-colour LED: shown in a warm white.
                 v = values[led]
                 item.set_color(QColor(255, 80, 40, min(200, v * 2)) if v else QColor(0, 0, 0, 0))
+            elif isinstance(led, dict):
+                # Multi-colour LED: {red = output, green = output, blue = output}.
+                rgb = [values[led[c]] if c in led else 0 for c in ("red", "green", "blue")]
+                level = max(rgb)
+                item.set_color(QColor(*(min(255, v * 255 // 100) for v in rgb), min(220, level * 2))
+                               if level else QColor(0, 0, 0, 0))
 
 
 # ---------------------------------------------------------------------------
