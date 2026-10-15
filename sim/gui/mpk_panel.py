@@ -3,7 +3,8 @@
 
 Starts Renode headless with its monitor on a TCP port, runs the stock
 firmware (sim/mpk.resc) and shows the controller: OLED, pad and button LEDs,
-clickable buttons. Two side panels help reverse-engineering:
+clickable buttons (left click: momentary; right click: latch, to hold
+several at once). Two side panels help reverse-engineering:
 
   - Key matrix: press any row/column position and watch what the firmware does.
   - LED outputs: brightness of the 56 outputs of the shift-register chain.
@@ -133,7 +134,9 @@ class Monitor:
 class LedOverlay(QGraphicsRectItem):
     """A translucent rectangle over an SVG element, tinted by LED brightness.
 
-    `on_press(down)` is called when it is clicked (down=True) and released.
+    `on_press(down)` is called when it is pressed (down=True) and released.
+    Left click: momentary. Right click: latch (stays pressed until the next
+    right click), so several buttons can be held at once.
     """
 
     def __init__(self, rect, radius=4, on_press=None):
@@ -142,8 +145,9 @@ class LedOverlay(QGraphicsRectItem):
         self.on_press = on_press
         self.color = QColor(0, 0, 0, 0)
         self.held = False
+        self.latched = False
         self.setPen(Qt.NoPen)
-        self.setAcceptedMouseButtons(Qt.LeftButton if on_press else Qt.NoButton)
+        self.setAcceptedMouseButtons(Qt.LeftButton | Qt.RightButton if on_press else Qt.NoButton)
         if on_press:
             self.setCursor(Qt.PointingHandCursor)
 
@@ -155,15 +159,29 @@ class LedOverlay(QGraphicsRectItem):
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(QBrush(self.color))
-        painter.setPen(QPen(QColor(255, 255, 255, 160), 2) if self.held else Qt.NoPen)
+        if self.latched:
+            painter.setPen(QPen(QColor(255, 200, 0), 3))
+        elif self.held:
+            painter.setPen(QPen(QColor(255, 255, 255, 160), 2))
+        else:
+            painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(self.rect(), self.radius, self.radius)
 
     def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.latched = not self.latched
+            self.update()
+            self.on_press(self.latched)
+            return
+        if self.latched:
+            return  # already held by the latch
         self.held = True
         self.update()
         self.on_press(True)
 
     def mouseReleaseEvent(self, event):
+        if event.button() == Qt.RightButton or self.latched:
+            return
         self.held = False
         self.update()
         self.on_press(False)
@@ -263,8 +281,30 @@ class PanelView(QGraphicsView):
 # Reverse-engineering panels
 # ---------------------------------------------------------------------------
 
+class MatrixButton(QPushButton):
+    """Left click: momentary press. Right click: latch / unlatch."""
+
+    def __init__(self, row, column, monitor):
+        super().__init__(f"{row},{column}")
+        self.command = f"{row} {column}"
+        self.monitor = monitor
+        self.latched = False
+        self.pressed.connect(lambda: self.latched or monitor.send(f"keys Press {self.command}"))
+        self.released.connect(lambda: self.latched or monitor.send(f"keys Release {self.command}"))
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.latched = not self.latched
+            verb = "Press" if self.latched else "Release"
+            self.monitor.send(f"keys {verb} {self.command}")
+            self.setStyleSheet("background: #e8b400; font-weight: bold;" if self.latched else "")
+            return
+        super().mousePressEvent(event)
+
+
 class MatrixPanel(QWidget):
-    """Grid of all key matrix positions: hold a button to press that key."""
+    """Grid of all key matrix positions. Left click: hold while the mouse is
+    down. Right click: latch the key (to hold several at once)."""
 
     def __init__(self, rows, columns, monitor):
         super().__init__()
@@ -274,10 +314,7 @@ class MatrixPanel(QWidget):
         for r in range(rows):
             layout.addWidget(QLabel(f"row {r}"), r + 1, 0)
             for c in range(columns):
-                button = QPushButton(f"{r},{c}")
-                button.pressed.connect(lambda r=r, c=c: monitor.send(f"keys Press {r} {c}"))
-                button.released.connect(lambda r=r, c=c: monitor.send(f"keys Release {r} {c}"))
-                layout.addWidget(button, r + 1, c + 1)
+                layout.addWidget(MatrixButton(r, c, monitor), r + 1, c + 1)
 
 
 class LedPanel(QWidget):

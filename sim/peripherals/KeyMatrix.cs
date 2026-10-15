@@ -22,6 +22,7 @@
 // Monitor commands (for `keys`):
 //   Press 10 2 / Release 10 2    key at row 10, column 2
 //   Pressed                      list of pressed keys
+//   ReleaseAll                   release every key (a reset keeps them held)
 //
 using System.Collections.Generic;
 
@@ -76,12 +77,19 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         {
         }
 
+        // Pressed keys survive a reset, like a key held down while the
+        // device restarts (that is how the power-up combinations work).
         public void Reset()
         {
             for(var bit = 0; bit < address.Length; bit++)
             {
                 address[bit] = false;
             }
+            Update();
+        }
+
+        public void ReleaseAll()
+        {
             System.Array.Clear(pressed, 0, pressed.Length);
             Update();
         }

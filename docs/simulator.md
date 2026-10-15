@@ -160,6 +160,11 @@ These button names come from the map above, so they are as good as its
   matrix position are known.
 - **LED outputs**: the 56 outputs of the chain with their brightness.
 - **Key matrix**: hold any row/column position to press it.
+- **Left click** on a button is momentary; **right click latches** it (yellow
+  outline) until the next right click. Latch SHIFT and click another button
+  for SHIFT functions, or latch two buttons and press Reset for the power-up
+  combinations. Double-clicking SHIFT also works: that is the firmware's own
+  Shift Lock.
 - `--screenshot file.png --seconds 30` saves a capture and quits (tests).
 
 Use **PySide6 6.11.2** (`sim/gui/requirements.txt`). 6.12.0 with Python 3.11
