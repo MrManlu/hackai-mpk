@@ -3,7 +3,7 @@
 // Adapted from Renode's platforms/cpus/stm32f103.repl: the AT32F415 follows
 // the STM32F1 register layout for GPIO, USART, SPI, I2C, timers and DMA.
 // Interrupt numbers come from the AT32F415 SVD. Peripherals without a model
-// (FLASH, ADC...) are logged by name thanks to ApplySVD in mpk.resc.
+// (FLASH...) are logged by name thanks to ApplySVD in mpk.resc.
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x40000
@@ -147,6 +147,12 @@ timer5: Timers.STM32_Timer @ sysbus 0x40000C00
     IRQ -> nvic@50
     frequency: 8000000
     initialLimit: 0xFFFF
+
+// ---------------------------------------------------------------- Analog
+
+// ADC1: hackai-mpk model (sim/peripherals/AT32_ADC.cs), DMA on DMA1 ch1.
+adc1: Analog.AT32_ADC @ sysbus 0x40012400
+    DMARequest -> dma1@1
 
 // ---------------------------------------------------------------- System
 

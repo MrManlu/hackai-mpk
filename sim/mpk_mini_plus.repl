@@ -18,7 +18,10 @@ leds: Miscellaneous.ShiftRegisterLeds @ spi1
     bytes: 7
     activeLow: true
 
+// Analog inputs: 8:1 multiplexers in front of ADC channels 0-4 (PA0-PA4),
+// select lines PB0-PB2. Pads, knobs, wheels and joystick (mapping to find).
 gpioPortB:
+    [0-2] -> adc1@[0-2]
     4 -> leds@0
     12 -> oled@1
     14 -> oled@0

@@ -23,11 +23,12 @@ import time
 import tomllib
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, Qt, QTimer
+from PySide6.QtCore import QPointF, QProcess, QRectF, Qt, QTimer
 from PySide6.QtGui import QBrush, QColor, QImage, QPainter, QPen, QPixmap
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
-from PySide6.QtWidgets import (QApplication, QDockWidget, QGraphicsPixmapItem,
+from PySide6.QtWidgets import (QApplication, QDockWidget, QGraphicsEllipseItem,
+                               QGraphicsPixmapItem,
                                QGraphicsRectItem, QGraphicsScene, QGraphicsView,
                                QGridLayout, QLabel, QMainWindow, QPlainTextEdit,
                                QPushButton, QToolBar, QWidget)
@@ -189,6 +190,143 @@ class LedOverlay(QGraphicsRectItem):
         self.on_press(False)
 
 
+def triangle(angle):
+    """Wiper of an endless potentiometer: 0..4095..0 over 360 degrees."""
+    angle %= 360
+    return int(4095 * (angle / 180 if angle < 180 else (360 - angle) / 180))
+
+
+class KnobItem(QGraphicsEllipseItem):
+    """Endless knob: mouse wheel or vertical drag turns it. Drives two
+    wipers 90 degrees apart (b lags a when turning clockwise)."""
+
+    def __init__(self, rect, send):
+        super().__init__(rect)
+        self.send = send
+        self.angle = 0.0
+        self.last_y = None
+        self.setPen(Qt.NoPen)
+        self.setAcceptedMouseButtons(Qt.LeftButton)
+        self.setCursor(Qt.SizeVerCursor)
+        self.setToolTip("Turn: mouse wheel or drag up/down")
+
+    def turn(self, degrees):
+        self.angle = (self.angle + degrees) % 360
+        self.send(self.angle)
+        self.update()
+
+    def paint(self, painter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+        r = self.rect()
+        painter.setPen(QPen(QColor("#444"), 2))
+        painter.setBrush(QColor("#1a1a1a"))
+        painter.drawEllipse(r)
+        painter.save()
+        painter.translate(r.center())
+        painter.rotate(self.angle)
+        painter.setPen(QPen(QColor("#ddd"), 2))
+        painter.drawLine(QPointF(0, 0), QPointF(0, -r.height() / 2 + 4))
+        painter.restore()
+
+    def wheelEvent(self, event):
+        self.turn(6 if event.delta() > 0 else -6)
+
+    def mousePressEvent(self, event):
+        self.last_y = event.scenePos().y()
+
+    def mouseMoveEvent(self, event):
+        y = event.scenePos().y()
+        self.turn((self.last_y - y) * 2)
+        self.last_y = y
+
+
+class WheelItem(QGraphicsRectItem):
+    """Pitch or modulation wheel: drag up/down. With `spring`, it goes back
+    to rest when released (pitch)."""
+
+    def __init__(self, rect, info, send):
+        super().__init__(rect)
+        self.info = info
+        self.send = send
+        span = info["max"] - info["min"]
+        self.position = (info["rest"] - info["min"]) / span   # 0 = bottom, 1 = top
+        self.setPen(Qt.NoPen)
+        self.setAcceptedMouseButtons(Qt.LeftButton)
+        self.setCursor(Qt.SizeVerCursor)
+
+    def value(self):
+        return int(self.info["min"] + self.position * (self.info["max"] - self.info["min"]))
+
+    def set_from_y(self, y):
+        r = self.rect()
+        self.position = min(1.0, max(0.0, (r.bottom() - y) / r.height()))
+        self.send(self.value())
+        self.update()
+
+    def paint(self, painter, option, widget=None):
+        r = self.rect()
+        y = r.bottom() - self.position * r.height()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(220, 220, 220, 200))
+        painter.drawRoundedRect(QRectF(r.left() + 4, y - 3, r.width() - 8, 6), 2, 2)
+
+    def mousePressEvent(self, event):
+        self.set_from_y(event.scenePos().y())
+
+    def mouseMoveEvent(self, event):
+        self.set_from_y(event.scenePos().y())
+
+    def mouseReleaseEvent(self, event):
+        if self.info.get("spring"):
+            span = self.info["max"] - self.info["min"]
+            self.position = (self.info["rest"] - self.info["min"]) / span
+            self.send(self.value())
+            self.update()
+
+
+class JoystickItem(QGraphicsEllipseItem):
+    """X/Y joystick: drag; springs back to the centre."""
+
+    def __init__(self, rect, info, send):
+        super().__init__(rect)
+        self.info = info
+        self.send = send
+        self.offset = QPointF(0, 0)
+        self.setPen(Qt.NoPen)
+        self.setAcceptedMouseButtons(Qt.LeftButton)
+        self.setCursor(Qt.OpenHandCursor)
+
+    def axis_value(self, d):
+        i = self.info
+        return int(i["rest"] + d * ((i["max"] - i["rest"]) if d > 0 else (i["rest"] - i["min"])))
+
+    def move_to(self, pos):
+        radius = self.info["radius"]
+        d = pos - self.rect().center()
+        length = (d.x() ** 2 + d.y() ** 2) ** 0.5
+        if length > radius:
+            d = d * (radius / length)
+        self.offset = d
+        self.send(self.axis_value(d.x() / radius), self.axis_value(-d.y() / radius))
+        self.update()
+
+    def paint(self, painter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+        r = self.rect()
+        painter.setPen(QPen(QColor("#111"), 2))
+        painter.setBrush(QColor("#d01a1a"))
+        painter.drawEllipse(r.translated(self.offset * 0.35))
+
+    def mousePressEvent(self, event):
+        self.move_to(event.scenePos())
+
+    def mouseMoveEvent(self, event):
+        self.move_to(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        self.move_to(self.rect().center())
+
+
 def element_rect(renderer, element_id):
     return renderer.transformForElement(element_id).mapRect(renderer.boundsOnElement(element_id))
 
@@ -219,11 +357,34 @@ class PanelView(QGraphicsView):
         self.oled_item.setTransformationMode(Qt.FastTransformation)
         scene.addItem(self.oled_item)
 
+        analog = config.get("analog", {})
+        pads = analog.get("pads", {})
         self.pads = []
         for n in range(1, 9):
-            item = LedOverlay(element_rect(self.renderer, f"pad{n}"), radius=5)
+            inputs = pads.get(f"pad{n}")
+            press = (lambda down, i=inputs, n=n: self.press_pad(n, i, down)) if inputs else None
+            item = LedOverlay(element_rect(self.renderer, f"pad{n}"), radius=5, on_press=press)
             scene.addItem(item)
             self.pads.append(item)
+        self.pad_pressure = pads.get("pressure", 3500)
+
+        self.analog_items = []
+        for name, info in analog.get("knobs", {}).items():
+            send = (lambda angle, i=info: self.set_knob(i, angle))
+            item = KnobItem(element_rect(self.renderer, name), send)
+            scene.addItem(item)
+            self.analog_items.append((item, lambda it=item: it.send(it.angle)))
+        for name, info in analog.get("wheels", {}).items():
+            send = (lambda value, i=info: self.set_input(i["input"], value))
+            item = WheelItem(element_rect(self.renderer, name), info, send)
+            scene.addItem(item)
+            self.analog_items.append((item, lambda it=item: it.send(it.value())))
+        joystick = analog.get("joystick")
+        if joystick:
+            send = (lambda x, y, j=joystick: (self.set_input(j["x"], x), self.set_input(j["y"], y)))
+            item = JoystickItem(element_rect(self.renderer, joystick["id"]), joystick, send)
+            scene.addItem(item)
+            self.analog_items.append((item, lambda it=item: it.move_to(it.rect().center())))
 
         self.buttons = {}
         for name, info in config["buttons"].items():
@@ -234,7 +395,8 @@ class PanelView(QGraphicsView):
             scene.addItem(item)
             self.buttons[name] = (item, info)
 
-    LEGEND = "Click: press  ·  Right-click: hold / release  (SHIFT: until the next button)"
+    LEGEND = ("Click: press  ·  Right-click: hold / release  (SHIFT: until the next button)"
+              "  ·  Knobs: wheel or drag  ·  Wheels, joystick: drag")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -269,6 +431,23 @@ class PanelView(QGraphicsView):
                     item.latched = False
                     item.update()
                     self.press_button(other, info.get("matrix"), False)
+
+    def set_input(self, position, value):
+        self.monitor.send(f"adc1 SetInput {position[0]} {position[1]} {int(value)}")
+
+    def set_knob(self, info, angle):
+        self.set_input(info["a"], triangle(angle))
+        self.set_input(info["b"], triangle(angle - 90))
+
+    def press_pad(self, n, inputs, down):
+        self.log(f"{'press' if down else 'release'} pad{n}")
+        for position in inputs:
+            self.set_input(position, self.pad_pressure if down else 0)
+
+    def send_analog_rest(self):
+        """Put every analog control in its rest position (called on connect)."""
+        for _, send_rest in self.analog_items:
+            send_rest()
 
     def show_framebuffer(self, data):
         # The framebuffer is already Qt's 1-bit format: MSB = leftmost pixel.
@@ -416,6 +595,8 @@ class MainWindow(QMainWindow):
             kind, value = self.monitor.results.get()
             if kind == "message":
                 self.log.appendPlainText(value)
+                if value == "connected to Renode":
+                    self.panel.send_analog_rest()
             else:
                 latest[kind] = value  # only the newest frame matters
         if "framebuffer" in latest:

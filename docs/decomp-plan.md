@@ -98,7 +98,8 @@ Details in [simulator.md](simulator.md).
 - [x] Panel GUI (PySide6, drawn as SVG) connected to Renode over TCP.
 - [x] Button matrix model.
 - [ ] Map buttons to matrix positions and LED outputs.
-- [ ] Inputs: keybed, pads, knobs, wheels, joystick.
+- [x] Analog inputs: pads, knobs, wheels, joystick (ADC + multiplexers).
+- [ ] Inputs: keybed, encoder.
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems

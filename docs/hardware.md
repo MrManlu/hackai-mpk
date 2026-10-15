@@ -53,6 +53,13 @@ SSD1306-compatible OLED driven over **SPI2**. Details in [display.md](display.md
 "From code" means the pin is toggled by the display routines in the
 bootloader. It still needs checking against the board traces.
 
+## Analog inputs
+
+ADC1 channels 0–4 (PA0–PA4) behind analog multiplexers with select lines
+PB0–PB2: a dual 4:1 (74HC4052-style) for the 8 pads and 8:1 (74HC4051-style)
+for the wheels, joystick and the two wipers of each endless knob. Details in
+[simulator.md](simulator.md#analog-inputs).
+
 ## Other peripherals
 
 To document: key matrix, pads (velocity sensing and RGB LED driver),

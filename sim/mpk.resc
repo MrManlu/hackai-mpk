@@ -5,6 +5,7 @@ $repo ?= $ORIGIN/..
 $firmware ?= $repo/baserom/firmware.bin
 
 include $ORIGIN/peripherals/AT32_CRM.cs
+include $ORIGIN/peripherals/AT32_ADC.cs
 include $ORIGIN/peripherals/AT32_OTGFS.cs
 include $ORIGIN/peripherals/SSD1306.cs
 include $ORIGIN/peripherals/SpiRecorder.cs
@@ -16,6 +17,12 @@ machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl
 
 # Name unmodelled registers in the log (FLASH, ADC...).
 sysbus ApplySVD $repo/build/svd/AT32F415xx_v2.renode.svd
+
+# Analog controls at rest (centre of their calibration range): pitch wheel,
+# joystick X and Y. See sim/gui/mpk_mini_plus.toml.
+adc1 SetInput 2 1 1597
+adc1 SetInput 2 2 1846
+adc1 SetInput 2 3 1846
 
 macro reset
 """

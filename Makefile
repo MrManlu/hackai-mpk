@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -27,6 +27,7 @@ help:
 	@echo "make setup-gui           install the simulator GUI dependencies (PySide6) in .venv"
 	@echo "make gui                 run the simulator with the MPK Mini Plus panel (PySide6)"
 	@echo "make matrix-sweep        press every button matrix position, report in build/reports/"
+	@echo "make analog-sweep        drive every analog input (ADC x mux), report in build/reports/"
 	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
 	@echo "make sim-debug           same as sim, with all the warnings (to find missing models)"
 	@echo "make sim-dump            run SIM_TIME virtual seconds headless and print the OLED as text"
@@ -83,6 +84,10 @@ gui: $(SVD_RENODE) | $(PYTHON)
 matrix-sweep: $(SVD_RENODE)
 	python3 tools/baserom.py --check
 	RENODE=$(RENODE) python3 sim/scripts/matrix_sweep.py
+
+analog-sweep: $(SVD_RENODE)
+	python3 tools/baserom.py --check
+	RENODE=$(RENODE) python3 sim/scripts/analog_sweep.py
 
 sim: $(SVD_RENODE)
 	python3 tools/baserom.py --check

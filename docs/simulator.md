@@ -25,7 +25,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | LEDs (shift-register chain on SPI1, PWM brightness) | ✅ see [leds.md](leds.md) |
 | Key matrix (decoder on PC0–PC3, columns PC8–PC13) | ✅ model; 18 buttons mapped (rows 10–12) |
 | Panel GUI (PySide6) | ✅ OLED, pad and LED outputs, matrix explorer |
-| Keybed, pads (velocity), knobs, wheels, joystick, MIDI | ⚪ not modelled yet |
+| Analog inputs: ADC1 + multiplexers (pads, knobs, wheels, joystick) | ✅ see [Analog inputs](#analog-inputs) |
+| Keybed, encoder, MIDI | ⚪ not modelled yet |
 
 ## Files
 
@@ -39,6 +40,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/peripherals/AT32_OTGFS.cs` | USB OTG stub: the USB initialisation finishes as if no host were connected |
 | `sim/peripherals/ShiftRegisterLeds.cs` | LED chain: 7 shift registers on SPI1, latch on PB4, average brightness per output |
 | `sim/peripherals/SpiRecorder.cs` | Records raw SPI bursts with timestamps, for reverse engineering a bus |
+| `sim/peripherals/AT32_ADC.cs` | ADC1 with external 8:1 multiplexers (select PB0–PB2): scan, continuous, DMA; `adc1 SetInput ch mux value` |
+| `sim/scripts/analog_sweep.py` | `make analog-sweep`: drives every analog input and reports what changes |
 | `sim/peripherals/KeyMatrix.cs` | Key matrix behind a row decoder (PC0–PC3 select row 0–12, PC8–PC13 read columns); `keys Press r c` / `keys Release r c` |
 | `sim/scripts/matrix_sweep.py` | `make matrix-sweep`: presses every position on a fresh boot and reports what changes (`build/reports/matrix_sweep.md`) |
 | `sim/gui/mpk_panel.py` | The panel GUI: starts Renode with its monitor on TCP and polls the OLED and LEDs |
@@ -178,3 +181,36 @@ These button names come from the map above, so they are as good as its
 Use **PySide6 6.11.2** (`sim/gui/requirements.txt`). 6.12.0 with Python 3.11
 leaks references to `None` on every call that returns nothing and aborts
 after a few thousand calls (`Fatal Python error: none_dealloc`).
+
+## Analog inputs
+
+ADC1 converts **channels 0–4 (PA0–PA4)** in a continuous scan, by DMA (DMA1
+channel 1, 16-bit, double buffer at `0x20004B24`). In front of the inputs,
+analog multiplexers share the select lines **PB0–PB2**. The scan routine
+(`FUN_0801b080`, called from the TMR3 interrupt path) steps the select lines
+0–7, filters each reading and stores it in a table of 32 entries of 8 bytes at
+`0x200040D0` (value, filtered value, calibration minimum, maximum).
+
+The firmware names each control on the OLED when it moves, which gave this
+map (`make analog-sweep`):
+
+| Channel | Multiplexer | Controls |
+|---|---|---|
+| 0 | dual 4:1 (S0–S1 only) | PAD 4, 2, 3, 1 at positions 0–3 (and again at 4–7) |
+| 1 | dual 4:1 (S0–S1 only) | PAD 5, 8, 7, 6 at positions 0–3 (and again at 4–7) |
+| 2 | 8:1, auto-calibrated and scaled to 0–4095 | 0 = modulation wheel ("Modulation"), 1 = pitch wheel ("PITCH"), 2–3 = joystick ("JOYSTICK"), 4–7 unused |
+| 3 | 8:1 | Knobs 1–8, second wiper |
+| 4 | 8:1 | Knobs 1–8, first wiper ("QLINK n") |
+
+- **Pads**: pressure sensors. A press shows "PAD-n / NOTE#… / CH10" and the
+  velocity; the pad LED switches from triplet channel 2 (red, rest) to
+  channel 0 (hit colour, still to confirm on the real unit).
+- **Knobs** are endless: two wipers with triangle waves 90° apart. Turning
+  clockwise (value up) means the second wiper lags the first by 90°.
+- **Wheels and joystick** use calibration limits stored in flash (pitch and
+  mod 100–3095, joystick 110–3583). `mpk.resc` puts the pitch wheel and the
+  joystick at the centre of their range at startup.
+
+In the GUI: click a pad (right click to hold), turn a knob with the mouse
+wheel or by dragging, drag the wheels and the joystick (pitch and joystick
+spring back).
