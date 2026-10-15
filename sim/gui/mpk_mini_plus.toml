@@ -14,9 +14,11 @@ color = "#e8f0ff"
 [pads]
 first_output = 24
 # Offset of the red, green and blue channel inside each triplet.
-# Red = 2 is the colour of all pads at power-up with program 1 ("MPC"), seen
-# on the real unit. Green and blue are a guess.
-rgb_offsets = [2, 0, 1]
+# Red = 2: all pads red at power-up with program 1 ("MPC"), real unit.
+# Green = 1: program 5 ("GarageBand") makes the pads green on the real unit;
+# in the simulator it lights them at [12, 62, 16] % (channel 1 dominant).
+# Blue = 0 by elimination (also the hit colour of program 1).
+rgb_offsets = [2, 1, 0]
 # Which triplet (0-7) lights each pad, pad1..pad8. Reversed: in PROG SELECT
 # mode the real unit lights PAD 1 and the firmware lights the last triplet
 # (outputs 45-47). Only PAD 1 is confirmed; the rest assume the same order.

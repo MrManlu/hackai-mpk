@@ -35,8 +35,20 @@ they are sent.
 
 | Outputs | Bytes | Function | Status |
 |---|---|---|---|
-| 24–47 | 3–5 | **8 RGB pad LEDs**, one triplet of outputs per pad | Strong hypothesis: at power-up every 3rd output (26, 29, …, 47) is fully on, so all pads show the same colour |
+| 24–47 | 3–5 | **8 RGB pad LEDs**: pad n = outputs 24 + 3(8 − n) + {0 blue, 1 green, 2 red} | Confirmed (see below) |
 | 0–23, 48–55 | 0–2, 6 | Button LEDs | At power-up 17 of them are at 4/32 (dim backlight) and output 21 (BANK A) is fully on. Map in [simulator.md](simulator.md#key-matrix-and-power-up-key-combinations) |
+
+Program colours seen in the simulator (pad LEDs at rest, blue/green/red %):
+
+| Program | Name | Pads |
+|---|---|---|
+| 1 | MPC | 0 / 0 / 100 (red) |
+| 2–3 | | 0 / 47 / 47 |
+| 4 | FL Studio | 0 / 100 / 0 (green) |
+| 5 | GarageBand | 12 / 62 / 16 (green) |
+| 6 | | 16 / 59 / 0 |
+| 7 | | 22 / 28 / 0 |
+| 8 | | 0 / 0 / 100 (red) |
 
 Confirmed colours:
 
@@ -47,12 +59,13 @@ Confirmed colours:
 
 To find out:
 
-- [ ] Which channel of each triplet is red, green and blue. Knowing the colour
-      of the pads at power-up identifies the channel at offset 2.
-- [ ] Which pad each triplet belongs to. **PAD 1 = last triplet (outputs
-      45–47)**, confirmed: in PROG SELECT mode the real unit lights PAD 1 and
-      the firmware lights only that triplet. The other pads are assumed to
-      follow in reverse order (pad n = triplet 8 − n).
+- [x] Which channel of each triplet is red, green and blue: **offset 0 =
+      blue, 1 = green, 2 = red**. Red from the power-up colour (program 1,
+      "MPC"), green from program 5 ("GarageBand", green pads on the real
+      unit, channel 1 dominant in the simulator), blue by elimination.
+- [x] Which pad each triplet belongs to: **pad n = triplet 8 − n** (PAD 1 =
+      outputs 45–47). PAD 1 seen on the real unit; all 8 confirmed in the
+      simulator by the firmware's own "PAD-n" screen when each pad is hit.
 - [x] Which button each other output belongs to: first pass done with
       `make matrix-sweep` (transport LEDs among 2–6 still to assign).
 - [ ] Where the firmware computes the 224-byte buffer from the colours (the
