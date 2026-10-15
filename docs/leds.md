@@ -55,6 +55,7 @@ Confirmed colours:
 | Outputs | LED | Evidence |
 |---|---|---|
 | 45–47 | PAD 1 (the triplet lit in PROG SELECT mode); outputs 47 lit = red at power-up | Real unit: PAD 1 lights; red pads at power-up |
+| Pads: offset 2 / 1 / 0 | **Red / green / blue** | Real unit: red at rest and blue when hit with program 1 (MPC), green with program 5 (GarageBand) |
 | 21 / 22 | BANK A/B button, **red / green** | Real unit: the button turns from red (bank A) to green (bank B). Simulator: pressing it swaps output 21 for 22 and back |
 
 To find out:
@@ -62,7 +63,9 @@ To find out:
 - [x] Which channel of each triplet is red, green and blue: **offset 0 =
       blue, 1 = green, 2 = red**. Red from the power-up colour (program 1,
       "MPC"), green from program 5 ("GarageBand", green pads on the real
-      unit, channel 1 dominant in the simulator), blue by elimination.
+      unit, channel 1 dominant in the simulator), blue from the hit colour of
+      program 1 (pads turn blue when hit on the real unit, channel 0 in the
+      simulator). All three confirmed.
 - [x] Which pad each triplet belongs to: **pad n = triplet 8 − n** (PAD 1 =
       outputs 45–47). PAD 1 seen on the real unit; all 8 confirmed in the
       simulator by the firmware's own "PAD-n" screen when each pad is hit.

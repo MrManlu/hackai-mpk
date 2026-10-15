@@ -17,7 +17,7 @@ first_output = 24
 # Red = 2: all pads red at power-up with program 1 ("MPC"), real unit.
 # Green = 1: program 5 ("GarageBand") makes the pads green on the real unit;
 # in the simulator it lights them at [12, 62, 16] % (channel 1 dominant).
-# Blue = 0 by elimination (also the hit colour of program 1).
+# Blue = 0: program 1 pads turn blue when hit on the real unit (channel 0).
 rgb_offsets = [2, 1, 0]
 # Which triplet (0-7) lights each pad, pad1..pad8. Reversed: in PROG SELECT
 # mode the real unit lights PAD 1 and the firmware lights the last triplet
