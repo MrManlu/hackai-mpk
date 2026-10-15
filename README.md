@@ -36,7 +36,7 @@ Early stage. The table shows the plan, not finished features.
 |---|---|---|
 | Hardware and stock firmware documentation | Research | 🟡 In progress |
 | Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
-| Simulator (stock firmware in Renode, OLED in a window) | Tooling | 🟡 Boots to the main screen |
+| Simulator (stock firmware in Renode, panel GUI) | Tooling | 🟡 Boots; OLED, LEDs and buttons work |
 | Safe flashing and recovery method | Foundation | ⚪ Planned |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
@@ -93,7 +93,7 @@ Optional mod to use the MPK without a USB cable:
 
 - 1S Li-ion/LiPo cell with a **protection circuit** (over-charge,
   over-discharge, short circuit).
-- Charger with *power path* from USB-C, so the unit works while charging.
+- Charger with *power path* from USB, so the unit works while charging.
 - Boost converter to the supply rail, sized for LEDs and display.
 - Charge measurement with an I²C **fuel gauge** or a resistor divider into a
   free ADC pin.
@@ -116,8 +116,8 @@ Schematics, BOM and build guide will live in `hardware/`.
 | Debug | Populated SWD/JTAG header on the main board |
 | Display | SSD1306-compatible OLED, probably 128 × 32, on SPI2 + DMA |
 | Flash layout | 20 KB bootloader + 20 KB bootloader update payload + application at `0x0800A000` |
-| Controls | 37 keys, 8 RGB pads, 8 knobs, pitch and modulation wheels |
-| I/O | USB-C, MIDI IN/OUT (5-pin DIN), CV/Gate outputs |
+| Controls | 37 keys, 8 RGB pads, 8 endless knobs, pitch and modulation wheels, X/Y joystick, push encoder, 18 buttons with LEDs |
+| I/O | USB Type-B, MIDI IN/OUT (5-pin DIN), CV/Gate/Mod outputs, clock in/out, sustain pedal |
 
 Full details and open questions are in [`docs/`](docs/README.md):
 [hardware](docs/hardware.md) · [firmware image](docs/firmware-image.md) ·
@@ -140,9 +140,9 @@ make ghidra                                   # build build/ghidra/hackai-mpk.gp
 ```
 
 Rename things in Ghidra, then run `make export` to save your names in
-`config/symbols.csv`. `make sim` runs the stock firmware in
-[Renode](https://renode.io) with the OLED in a window
-([docs/simulator.md](docs/simulator.md)). The strategy and milestones are in
+`config/symbols.csv`. `make gui` runs the stock firmware in
+[Renode](https://renode.io) behind a panel of the controller (OLED, LEDs,
+buttons), see [docs/simulator.md](docs/simulator.md). The strategy and milestones are in
 [docs/decomp-plan.md](docs/decomp-plan.md).
 
 ---

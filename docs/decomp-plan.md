@@ -95,8 +95,10 @@ Details in [simulator.md](simulator.md).
 - [x] Bootloader jumps to the application.
 - [x] Application boots to its main screen.
 - [x] LEDs: shift-register chain model ([leds.md](leds.md)).
-- [ ] Panel GUI (PySide6, drawn as SVG) connected to Renode over TCP.
-- [ ] Inputs: keys, pads, knobs.
+- [x] Panel GUI (PySide6, drawn as SVG) connected to Renode over TCP.
+- [x] Button matrix model.
+- [ ] Map buttons to matrix positions and LED outputs.
+- [ ] Inputs: keybed, pads, knobs, wheels, joystick.
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems

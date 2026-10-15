@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup baserom check ghidra rebuild export report decompile sim sim-debug sim-dump clean distclean
+.PHONY: help setup setup-gui gui baserom check ghidra rebuild export report decompile sim sim-debug sim-dump clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -24,6 +24,8 @@ help:
 	@echo "make export              write names from Ghidra back to config/symbols.csv"
 	@echo "make decompile F=<fn>    print Ghidra's decompilation of functions (names or 0x addresses)"
 	@echo "make report              generate analysis reports in build/reports/"
+	@echo "make setup-gui           install the simulator GUI dependencies (PySide6) in .venv"
+	@echo "make gui                 run the simulator with the MPK Mini Plus panel (PySide6)"
 	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
 	@echo "make sim-debug           same as sim, with all the warnings (to find missing models)"
 	@echo "make sim-dump            run SIM_TIME virtual seconds headless and print the OLED as text"
@@ -69,6 +71,13 @@ decompile: | $(PYTHON)
 
 report: | $(PYTHON)
 	$(PYTHON) tools/ghidra/report_peripherals.py
+
+setup-gui: | $(PYTHON)
+	$(PYTHON) -m pip install -r sim/gui/requirements.txt
+
+gui: $(SVD_RENODE) | $(PYTHON)
+	python3 tools/baserom.py --check
+	RENODE=$(RENODE) $(PYTHON) sim/gui/mpk_panel.py
 
 sim: $(SVD_RENODE)
 	python3 tools/baserom.py --check

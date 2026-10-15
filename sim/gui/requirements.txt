@@ -1,0 +1,6 @@
+# Simulator GUI. Installed by `make setup-gui`.
+#
+# PySide6 6.12.0 with Python 3.11 drops a reference to None on every call
+# that returns nothing, and the GUI aborts after a few thousand calls
+# ("Fatal Python error: none_dealloc"). 6.11.2 is fine.
+PySide6==6.11.2
