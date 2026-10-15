@@ -85,6 +85,7 @@ address,kind,name,type,status,notes
 0x08021200,label,BOOTLOADER_START_LAST_REGION,,named,
 0x08021204,label,BOOTLOADER_END_LAST_REGION,,named,
 0x080243B4,func,main,,named,
+0x08024628,func,hid_process_packet_APP,,understood,"Application HID handler: answers a 'UO' C4 packet with 'UI' E4 and ignores everything else (tells update tools the bootloader is not running)."
 0x08024E94,func,__iar_data_init3,,named,IAR runtime: runs the RAM initialisers from a table.
 0x08024F1C,func,__cmain,,named,"IAR runtime: __low_level_init, __iar_data_init3, main, exit."
 0x08024F3A,func,__low_level_init,,named,"IAR default weak version, returns 1."

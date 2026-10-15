@@ -87,7 +87,10 @@ version, firmware version (BCD), and two bytes not checked by the bootloader
 - Configuration with 3 interfaces; interface 0 is **HID** (report descriptor
   of 52 bytes), interrupt endpoints `0x81` IN and `0x01` OUT, 32 bytes.
 - The application has the same HID interface (descriptor at `0x08025C39`),
-  probably for the program editor and to send the device to update mode.
+  probably for the program editor. Its handler (`hid_process_packet_APP`,
+  `0x08024628`) answers a `UO` `C4` packet with `UI` **`E4`** and ignores every
+  other command: an update tool can tell the application from the bootloader
+  (`F4`) safely. See [updater.md](updater.md).
 
 ## What this means for mods
 
@@ -103,6 +106,7 @@ version, firmware version (BCD), and two bytes not checked by the bootloader
   non-`0xFF`.
 - Per-packet 16-bit sums are the only integrity check: our own updater must
   verify the result (read back, or check the boot) itself.
+- **No anti-rollback**: no version is ever compared, any image can be written.
 
 ## Function names
 
@@ -119,8 +123,8 @@ Applied in `config/symbols.csv`:
 ## Open questions
 
 - [ ] HID report descriptor (52 bytes) and the other two interfaces.
-- [ ] How the official updater sends a running unit to update mode (an HID
-      command to the application?).
+- [ ] How the official updater sends a running unit to update mode. Not
+      through `UO` packets: the application only answers `C4` (with `E4`).
 - [ ] Bytes 7–8 of `C2` packets, and the last two trailer bytes (`B2 47`).
 - [ ] Packet order in the official updater (does it write the config sector
       last?).

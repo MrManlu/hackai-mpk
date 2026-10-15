@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -32,6 +32,9 @@ help:
 	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
 	@echo "make sim-debug           same as sim, with all the warnings (to find missing models)"
 	@echo "make sim-dump            run SIM_TIME virtual seconds headless and print the OLED as text"
+	@echo "make flash-check IMAGE=… safety checks on a firmware image"
+	@echo "make flash-sim IMAGE=…   flash an image into the simulator over the update protocol, verify it"
+	@echo "make flash IMAGE=…       flash a real unit in update mode (SHIFT + PROG SELECT at power-up)"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -103,6 +106,18 @@ sim-dump: $(SVD_RENODE)
 	$(RENODE) --disable-gui --console --plain \
 	  -e 'include @sim/mpk.resc; emulation RunFor "$(SIM_TIME)"; cpu PC; spi2.oled AsciiArt; quit' \
 	  </dev/null 2>&1 | tr -d '\r' | grep -E '^(0x|[.#]+$$)'
+
+flash-check:
+	@test -n "$(IMAGE)" || { echo "usage: make flash-check IMAGE=<file>"; exit 1; }
+	python3 tools/mpkflash.py check "$(IMAGE)"
+
+flash-sim: $(SVD_RENODE)
+	@test -n "$(IMAGE)" || { echo "usage: make flash-sim IMAGE=<file>"; exit 1; }
+	RENODE=$(RENODE) python3 -u tools/mpkflash.py flash "$(IMAGE)" --sim
+
+flash:
+	@test -n "$(IMAGE)" || { echo "usage: make flash IMAGE=<file>"; exit 1; }
+	python3 tools/mpkflash.py flash "$(IMAGE)" --hid
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

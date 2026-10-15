@@ -1,0 +1,5 @@
+# AKAI MPK Mini Plus (VID 09E8, PID 0054): let the logged-in user open its HID
+# interface (/dev/hidrawN) for tools/mpkflash.py, without root.
+# Install: sudo cp tools/udev/70-mpk-mini-plus.rules /etc/udev/rules.d/
+#          sudo udevadm control --reload && sudo udevadm trigger
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="09e8", ATTRS{idProduct}=="0054", TAG+="uaccess"
