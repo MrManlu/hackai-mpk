@@ -37,8 +37,11 @@ The file is exactly the size of the MCU flash and maps 1:1 onto
 | `0x00000` | `0x08000000` | 20 KB | **Bootloader** (vector table, flash routines, "Upgrade" screen) | confirmed |
 | `0x05000` | `0x08005000` | 20 KB | **Bootloader update payload** (identical copy in v1.13) | confirmed |
 | `0x0A000` | `0x0800A000` | ~111 KB | **Application** (code ends around `0x25D4C`) | confirmed |
-| `0x25D4C` | | | Zero padding, with the **application-present marker** at `0x0802E7FE`–`0x0802E7FF` | confirmed |
-| `0x37000` | `0x08037000` | 9 × 4 KB | Blocks that each hold `0x14B` bytes of data | hypothesis: programs/presets and settings |
+| `0x25D4C` | `0x08025D4C` | ~33 KB | Zero padding: **free space for patches** | confirmed |
+| `0x2E000` | `0x0802E000` | 4 KB | Zero padding with the **application-present marker** at `0x0802E7FE`–`0x0802E7FF` | confirmed |
+| `0x2F000` | `0x0802F000` | 32 KB | **User programs**: zeros in the update image; the application formats them at first boot (16 sector erases, default programs such as "FLStudio20") | confirmed in the simulator |
+| `0x37000` | `0x08037000` | 9 × 4 KB | Blocks that each hold `0x14B` bytes of data | hypothesis: factory presets |
+| `0x3F800` | `0x0803F800` | 2 KB | **Configuration sector**: serial, calibration (`0x0803F820`), trailer. Preserved by the bootloader on updates | confirmed |
 | `0x3FFF0` | `0x0803FFF0` | 16 B | Trailer `09e80054ff0c0113ffffffffffffb247` | partly known, see below |
 
 The trailer holds the firmware version in BCD at `0x0803FFF6` (major, `01`)

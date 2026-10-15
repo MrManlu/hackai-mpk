@@ -41,16 +41,37 @@ suffix = ""
 [[segment]]
 name = "free"
 start = 0x08025D4C
+end = 0x0802E000
+perms = "r"
+note = "Zero padding after the application: the space for patches (about 33 KB)."
+
+[[segment]]
+name = "app_marker"
+start = 0x0802E000
+end = 0x0802F000
+perms = "r"
+note = "Zero padding holding the application-present marker at 0x0802E7FE-0x0802E7FF (bootloader checks they are not 0xFF). Do not use."
+
+[[segment]]
+name = "user_programs"
+start = 0x0802F000
 end = 0x08037000
 perms = "r"
-note = "Zero padding. Candidate space for patches. Bytes 0x0802E7FE-0x0802E7FF are the application-present marker: keep them non-0xFF."
+note = "User programs: zeros in the update image; the application erases and writes the defaults at first boot when the data is not valid."
 
 [[segment]]
 name = "storage"
 start = 0x08037000
+end = 0x0803F800
+perms = "r"
+note = "Nine 4 KB blocks with 0x14B bytes of data each (factory presets?)."
+
+[[segment]]
+name = "config"
+start = 0x0803F800
 end = 0x08040000
 perms = "r"
-note = "Nine 4 KB blocks with 0x14B bytes of data each (presets/settings?) and a 16-byte trailer."
+note = "Configuration sector: serial, calibration at 0x0803F820, trailer at 0x0803FFF0 (VID/PID, layout, version). Preserved by the bootloader on updates."
 
 # Uninitialised memory. Peripherals come from the SVD.
 [[memory]]

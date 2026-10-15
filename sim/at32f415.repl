@@ -3,7 +3,7 @@
 // Adapted from Renode's platforms/cpus/stm32f103.repl: the AT32F415 follows
 // the STM32F1 register layout for GPIO, USART, SPI, I2C, timers and DMA.
 // Interrupt numbers come from the AT32F415 SVD. Peripherals without a model
-// (FLASH...) are logged by name thanks to ApplySVD in mpk.resc.
+// (USD, ERTC...) are logged by name thanks to ApplySVD in mpk.resc.
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x40000
@@ -153,6 +153,21 @@ timer5: Timers.STM32_Timer @ sysbus 0x40000C00
 // ADC1: hackai-mpk model (sim/peripherals/AT32_ADC.cs), DMA on DMA1 ch1.
 adc1: Analog.AT32_ADC @ sysbus 0x40012400
     DMARequest -> dma1@1
+
+// ---------------------------------------------------------------- Flash
+
+// Flash controller: hackai-mpk model (sim/peripherals/AT32_FLASH.cs):
+// unlock keys, 2 KB sector erase, status flags.
+flashCtrl: Miscellaneous.AT32_FLASH @ sysbus 0x40022000
+    flashBase: 0x08000000
+    flashSize: 0x40000
+    sectorSize: 0x800
+
+// System memory / device information. The firmware reads the flash size in
+// KB at 0x1FFFF7E0 and refuses to erase or program beyond it. Values are
+// written by mpk.resc.
+systemMemory: Memory.MappedMemory @ sysbus 0x1FFFF000
+    size: 0x1000
 
 // ---------------------------------------------------------------- System
 

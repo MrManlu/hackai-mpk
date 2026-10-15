@@ -123,9 +123,9 @@ Details in [simulator.md](simulator.md).
 ### M5 · Patch framework
 
 - [ ] New code in C, built with GCC, linked against `symbols.csv`.
-- [ ] Placed in free flash (~70 KB between `0x08025D4C` and `0x08037000`,
-      to confirm that the bootloader writes it), avoiding the
-      application-present marker at `0x0802E7FE`–`0x0802E7FF`.
+- [ ] Placed in free flash: `0x08025D4C`–`0x0802DFFF` (about 33 KB). Not
+      beyond: `0x0802E7FE` holds the application-present marker and
+      `0x0802F000`–`0x08036FFF` are the user programs.
 - [ ] Hooks (branch patches) into stock functions.
 - [ ] `make patch`: stock image + patches → verified output image.
 - [ ] Differential tests in an emulator (Unicorn): original against

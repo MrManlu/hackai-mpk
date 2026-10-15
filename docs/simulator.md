@@ -41,6 +41,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/mpk_mini_plus.repl` | The board: the MCU plus what is wired to it (OLED on SPI2, D/C on PB14) |
 | `sim/mpk.resc` | Startup script: loads the C# models, the platform, the SVD and `baserom/firmware.bin` |
 | `sim/quiet.resc` | Silences known, harmless warnings for `make sim` |
+| `sim/peripherals/AT32_FLASH.cs` | Flash controller: unlock, 2 KB sector erase, status flags. With `F_SIZE` at `0x1FFFF7E0` (set by `mpk.resc`) the firmware can erase and program. Flash persists across `machine Reset` |
 | `sim/peripherals/AT32_CRM.cs` | Clock controller: clocks report ready at once, SysTick follows the configured clock |
 | `sim/peripherals/AT32_OTGFS.cs` | USB OTG stub: the USB initialisation finishes as if no host were connected |
 | `sim/peripherals/ShiftRegisterLeds.cs` | LED chain: 7 shift registers on SPI1, latch on PB4, average brightness per output |
@@ -154,9 +155,10 @@ These button names come from the map above, so they are as good as its
 
 - [x] Why the bootloader stayed in update mode: keys read as pressed (see
       above).
-- [ ] FLASH controller and system memory: the application unlocks the flash
-      at boot and reads `0x1FFFF7E0` (flash size) thousands of times and
-      `0x1FFFF806`. Not blocking, but saving presets needs a real model.
+- [x] FLASH controller and system memory: modelled. The firmware refuses to
+      erase or program beyond `F_SIZE × 1024` (`0x1FFFF7E0`), which read 0
+      before. At first boot the application formats the user programs
+      (`0x0802F000`–`0x08036FFF`).
 - [x] Map buttons to matrix positions and LED outputs (first pass, see
       above; "O" entries and the transport LEDs still to confirm).
 - [ ] Rows 0-9: the keybed? Find how velocity is measured.
