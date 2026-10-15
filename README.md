@@ -8,6 +8,12 @@ already does well: proper MIDI THRU, pad LEDs driven over MIDI, more
 arpeggiator modes and, as an optional hardware mod, an internal battery with a
 charge indicator on the display.
 
+![The stock MPK Mini Plus firmware running in the hackai-mpk simulator](docs/img/simulator.png)
+
+*The stock firmware running unmodified in the simulator (`make gui`): OLED,
+pad and button LEDs, buttons, pads, knobs, wheels, joystick and encoder, plus
+panels to reverse-engineer the LED chain and the key matrix.*
+
 ## Supported models
 
 | Model | Status |

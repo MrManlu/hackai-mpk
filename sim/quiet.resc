@@ -3,3 +3,6 @@
 
 # Unmodelled registers (FLASH, ADC...): thousands of accesses at boot.
 logLevel 3 sysbus
+# The ADC keeps converting while the firmware has DMA channel 1 disabled
+# between two rounds of the multiplexer scan: those requests are dropped.
+logLevel 3 dma1
