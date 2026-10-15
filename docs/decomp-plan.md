@@ -135,6 +135,7 @@ Details in [simulator.md](simulator.md).
 
 1. Hello world: change the boot screen text (validates the whole chain).
 2. MIDI THRU.
-3. Pad LED feedback.
-4. New arpeggiator modes.
-5. Battery indicator.
+3. Per-pad MIDI channel (e.g. pad n on channel n, for a Digitakt).
+4. Pad LED feedback.
+5. New arpeggiator modes.
+6. Battery indicator.

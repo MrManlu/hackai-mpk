@@ -45,6 +45,7 @@ Early stage. The table shows the plan, not finished features.
 | Simulator (stock firmware in Renode, panel GUI) | Tooling | 🟡 Boots; OLED, LEDs and buttons work |
 | Safe flashing and recovery method | Foundation | ⚪ Planned |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
+| Per-pad MIDI channel | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
 | New arpeggiator modes | Firmware | ⚪ Planned |
 | Internal battery + on-screen indicator | Hardware + firmware | ⚪ Planned |
@@ -68,7 +69,18 @@ on MIDI IN is not forwarded to MIDI OUT. The plan is a configurable *soft THRU*:
 - Latency first: forwarding must not add noticeable delay or disturb MIDI
   Clock timing.
 
-### 2. MIDI feedback on the pad LEDs
+### 2. Per-pad MIDI channel
+
+The stock firmware sends all pads on one MIDI channel. The plan is to let
+each pad have its own channel (and note), for example PAD 1 on channel 1,
+PAD 2 on channel 2… With an Elektron Digitakt (one track per channel) that
+turns the pads into a finger-drumming controller for its tracks.
+
+- Channel per pad, stored with the program (or as a global option).
+- Editable from the controller (pad + encoder) and, ideally, by SysEx.
+- Works with Note Repeat and Full Level.
+
+### 3. MIDI feedback on the pad LEDs
 
 Let the RGB pads show the state of the DAW or another device, the way
 grid controllers do:
@@ -82,7 +94,7 @@ grid controllers do:
 The palette and mapping will be documented in [`docs/`](docs/) to make DAW
 scripts (Ableton, Bitwig, Reaper…) easy to write.
 
-### 3. New arpeggiator modes
+### 4. New arpeggiator modes
 
 On top of the factory modes:
 
@@ -93,7 +105,7 @@ On top of the factory modes:
 - **Euclidean**: spread *k* hits over *n* steps.
 - Per-step extras: **probability**, **ratchets** and velocity variation.
 
-### 4. Internal battery (hardware mod)
+### 5. Internal battery (hardware mod)
 
 Optional mod to use the MPK without a USB cable:
 
