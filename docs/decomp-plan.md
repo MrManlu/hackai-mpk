@@ -102,7 +102,7 @@ Details in [simulator.md](simulator.md).
 - [x] Encoder (quadrature on PC4/PC5, push in the matrix).
 - [x] Keybed (matrix rows 0-9, velocity from contact timestamps).
 - [x] MIDI OUT monitor (USART1).
-- [ ] MIDI IN and an ALSA bridge.
+- [x] MIDI IN (USART1 receive buffer) and a JACK/PipeWire MIDI bridge.
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems

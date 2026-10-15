@@ -139,6 +139,73 @@ class Monitor:
 
 
 # ---------------------------------------------------------------------------
+# JACK MIDI bridge
+# ---------------------------------------------------------------------------
+
+class JackBridge:
+    """JACK MIDI ports bridged to the simulated 5-pin DIN MIDI.
+
+    `din_out`: what the firmware sends on USART1 (decoded by `midiOut`).
+    `din_in`: events sent to it are injected into USART1, as if they came
+    through the DIN IN socket.
+
+    Uses JACK through PipeWire (run the GUI with `pw-jack`, `make gui
+    JACK=1`). The ALSA sequencer is deliberately not used: on some kernels
+    freeing its clients deadlocks snd-seq (see docs/simulator.md)."""
+
+    NAME = "MPK Mini Plus sim"
+
+    def __init__(self, monitor, log):
+        self.client = None
+        try:
+            import jack
+            self.client = jack.Client(self.NAME, no_start_server=True)
+        except Exception as error:   # no JACK-Client, or no JACK/PipeWire server
+            log(f"JACK MIDI bridge off: {error}")
+            return
+        self.pending = queue.SimpleQueue()
+        self.din_out = self.client.midi_outports.register("din_out")
+        self.din_in = self.client.midi_inports.register("din_in")
+
+        @self.client.set_process_callback
+        def process(frames):
+            self.din_out.clear_buffer()
+            while True:
+                try:
+                    self.din_out.write_midi_event(0, self.pending.get_nowait())
+                except queue.Empty:
+                    break
+            for _, data in self.din_in.incoming_midi_events():
+                for byte in bytes(data):
+                    monitor.send(f"usart1 WriteChar 0x{byte:02X}")
+
+        self.client.activate()
+        log(f'JACK MIDI ports "{self.NAME}:din_out" (firmware DIN OUT) and '
+            f'"{self.NAME}:din_in" (to DIN IN)')
+
+    @classmethod
+    def disabled(cls):
+        bridge = cls.__new__(cls)
+        bridge.client = None
+        return bridge
+
+    def close(self):
+        if self.client:
+            self.client.deactivate()
+            self.client.close()
+            self.client = None
+
+    def send_lines(self, lines):
+        """Forward lines of `midiOut Messages` (the hex column) to din_out."""
+        if not self.client:
+            return
+        for line in lines:
+            match = re.search(r" s  ((?:[0-9A-F]{2} )+)", line + " ")
+            if match:
+                self.pending.put(bytes(int(b, 16) for b in match.group(1).split()))
+
+
+# ---------------------------------------------------------------------------
 # Panel items
 # ---------------------------------------------------------------------------
 
@@ -713,7 +780,7 @@ class LedPanel(QWidget):
 # ---------------------------------------------------------------------------
 
 class MainWindow(QMainWindow):
-    def __init__(self, port):
+    def __init__(self, port, jack=False):
         super().__init__()
         self.setWindowTitle("hackai-mpk · MPK Mini Plus simulator")
         with open(GUI / "mpk_mini_plus.toml", "rb") as f:
@@ -749,6 +816,9 @@ class MainWindow(QMainWindow):
         toolbar.addAction("Continue", lambda: self.monitor.send("start"))
         toolbar.addAction("Reset", lambda: self.monitor.send("machine Reset"))
 
+        self.midi_bridge = (JackBridge(self.monitor, self.log.appendPlainText) if jack
+                            else JackBridge.disabled())
+
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.drain_results)
         self.timer.start(30)
@@ -762,6 +832,7 @@ class MainWindow(QMainWindow):
             if kind == "midi":
                 for line in value:
                     self.midi.appendPlainText(line)
+                self.midi_bridge.send_lines(value)
                 continue
             if kind == "message":
                 self.log.appendPlainText(value)
@@ -787,6 +858,7 @@ class MainWindow(QMainWindow):
                 self.log.appendPlainText(line)
 
     def closeEvent(self, event):
+        self.midi_bridge.close()
         self.monitor.stop()
         self.renode.waitForFinished(2000)
         if self.renode.state() != QProcess.NotRunning:
@@ -798,12 +870,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--port", type=int, default=4321, help="Renode monitor port")
+    parser.add_argument("--jack", action="store_true",
+                        help="bridge the simulated DIN MIDI to JACK ports (run under pw-jack)")
     parser.add_argument("--screenshot", type=Path, metavar="PNG",
                         help="save a screenshot after --seconds and quit (for tests)")
     parser.add_argument("--seconds", type=float, default=20)
     args = parser.parse_args()
     app = QApplication(sys.argv)
-    window = MainWindow(args.port)
+    window = MainWindow(args.port, jack=args.jack)
     window.show()
     if args.screenshot:
         def capture():

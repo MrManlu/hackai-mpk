@@ -29,7 +29,9 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Encoder (turn on PC4/PC5, push in the key matrix) | ✅ |
 | Keybed (37 keys, velocity from two contacts) | ✅ see [Keybed](#keybed) |
 | MIDI OUT (DIN) monitor | ✅ `midiOut Messages`, GUI panel |
-| MIDI IN, USB MIDI, ALSA bridge | ⚪ not yet |
+| MIDI IN (DIN): `usart1 WriteChar` into the firmware's receive buffer | ✅ |
+| MIDI bridge to JACK/PipeWire (`make gui JACK=1`) | ✅ |
+| USB MIDI | ⚪ not yet |
 
 ## Files
 
@@ -279,3 +281,26 @@ The **MIDI OUT (DIN)** panel shows what the firmware sends.
 Note: at boot the analog controls go from 0 to their rest value, which the
 firmware sees as a move; it shows "JOYSTICK" for about a second before the
 main screen.
+
+## MIDI
+
+- **DIN OUT**: USART1, sent by DMA. `MidiMonitor.cs` decodes it
+  (`midiOut Messages 20`); the GUI shows it in the "MIDI OUT (DIN)" panel.
+- **DIN IN**: bytes injected with `usart1 WriteChar 0x90` reach the firmware
+  like bytes from the socket: `USART1_IRQHandler` stores them in a 128-byte
+  ring buffer at `0x20004730` (write index at `0x20004D74`). MIDI THRU will
+  hook here.
+- **JACK bridge** (`make gui JACK=1`, needs `pipewire-jack` for `pw-jack` and
+  `JACK-Client` from `make setup-gui`): the GUI registers a JACK client
+  "MPK Mini Plus sim" with two MIDI ports, `din_out` (what the firmware sends)
+  and `din_in` (into the firmware). Connect them with qpwgraph, a DAW, or
+  `jack_connect`. Latency is that of the GUI polling (tens of ms) plus the
+  simulator running slower than real time: fine for development, not for
+  playing.
+
+Why not the ALSA sequencer: an earlier bridge used python-rtmidi virtual ALSA
+ports. On Debian's 6.1 kernel, freeing those sequencer clients at process exit
+deadlocked `snd-seq` in the kernel (processes stuck in `seq_free_client`,
+then PipeWire too), and only a reboot fixed it. JACK through PipeWire never
+creates kernel sequencer clients. (python-rtmidi was also unusable for JACK:
+its wheel bundles its own libjack, so `pw-jack` cannot redirect it.)

@@ -4,3 +4,8 @@
 # that returns nothing, and the GUI aborts after a few thousand calls
 # ("Fatal Python error: none_dealloc"). 6.11.2 is fine.
 PySide6==6.11.2
+# JACK MIDI ports bridged to the simulated DIN IN/OUT (optional: the GUI works
+# without it). Loads the system libjack, so under `pw-jack` it talks to
+# PipeWire. (python-rtmidi bundles its own libjack and uses the ALSA
+# sequencer, which deadlocked snd-seq on Debian 6.1 kernels: not used.)
+JACK-Client==0.5.7

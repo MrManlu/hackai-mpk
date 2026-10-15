@@ -26,6 +26,7 @@ help:
 	@echo "make report              generate analysis reports in build/reports/"
 	@echo "make setup-gui           install the simulator GUI dependencies (PySide6) in .venv"
 	@echo "make gui                 run the simulator with the MPK Mini Plus panel (PySide6)"
+	@echo "make gui JACK=1          same, with the DIN MIDI on JACK ports (PipeWire, needs pw-jack)"
 	@echo "make matrix-sweep        press every button matrix position, report in build/reports/"
 	@echo "make analog-sweep        drive every analog input (ADC x mux), report in build/reports/"
 	@echo "make sim                 run the stock firmware in Renode, with the OLED in a window"
@@ -79,7 +80,7 @@ setup-gui: | $(PYTHON)
 
 gui: $(SVD_RENODE) | $(PYTHON)
 	python3 tools/baserom.py --check
-	RENODE=$(RENODE) $(PYTHON) sim/gui/mpk_panel.py
+	RENODE=$(RENODE) $(if $(JACK),pw-jack) $(PYTHON) sim/gui/mpk_panel.py $(if $(JACK),--jack)
 
 matrix-sweep: $(SVD_RENODE)
 	python3 tools/baserom.py --check

@@ -12,6 +12,7 @@
 | `arm-none-eabi-binutils` | any | Quick disassembly (optional) |
 | Renode | 1.17.0 (portable) | Simulator, `make sim` (see [simulator.md](simulator.md)) |
 | PySide6 | 6.11.2 (not 6.12.0) | Simulator GUI, `make setup-gui` / `make gui` |
+| pipewire-jack (`pw-jack`) + JACK-Client | any / 0.5.7 | Optional MIDI bridge, `make gui JACK=1` |
 | OpenOCD | any | SWD access (M4, optional for now) |
 
 If Ghidra is not in `/opt/ghidra_11.3.1_PUBLIC`, pass its location:
