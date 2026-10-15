@@ -161,9 +161,10 @@ These button names come from the map above, so they are as good as its
 - **LED outputs**: the 56 outputs of the chain with their brightness.
 - **Key matrix**: hold any row/column position to press it.
 - **Left click** on a button is momentary; **right click latches** it (yellow
-  outline) until the next right click. Latch SHIFT and click another button
-  for SHIFT functions, or latch two buttons and press Reset for the power-up
-  combinations. Double-clicking SHIFT also works: that is the firmware's own
+  outline) until the next right click. A latched **SHIFT** is sticky: it
+  releases itself after the next button you press (`modifier = true` in the
+  TOML). Other latched buttons stay held, so latching two and pressing Reset
+  triggers the power-up combinations. Double-clicking SHIFT also works: that is the firmware's own
   Shift Lock.
 - `--screenshot file.png --seconds 30` saves a capture and quits (tests).
 

@@ -22,6 +22,8 @@ triplet = [0, 1, 2, 3, 4, 5, 6, 7]
 
 # Buttons with a LED. `led` is the output of the shift-register chain, or a
 # table of outputs per colour for multi-colour LEDs ({ red = 21, green = 22 }),
+# `modifier = true` makes a latched button (right click) release itself after
+# the next press of another button (sticky SHIFT),
 # `matrix` is [row, column] in the key matrix (row 0-12 selected through a
 # decoder on PC0-PC3, columns PC8-PC13). Found with `make matrix-sweep`:
 #   confirmed  = the screen names the function (Arp Setup, Note Repeat, Load
@@ -39,7 +41,7 @@ btn_oct_up = { matrix = [10, 5], led = 48 }       # order: LED lit after press
 btn_bank = { matrix = [11, 0], led = { red = 21, green = 22 } }  # confirmed on the real unit: red = bank A, green = bank B
 btn_scales = { matrix = [11, 1], led = 19 }       # order: LED toggles
 btn_chords = { matrix = [11, 2], led = 17 }       # order: LED toggles
-btn_shift = { matrix = [11, 3], led = 14 }        # confirmed: LED lit only while held
+btn_shift = { matrix = [11, 3], led = 14, modifier = true }        # confirmed: LED lit only while held
 btn_home = { matrix = [11, 4], led = 12 }         # order (no change on the home screen); LED by elimination
 btn_prog_select = { matrix = [11, 5], led = 10 }  # confirmed: "Load Program / Press a pad"
 btn_rewind = { matrix = [12, 0] }                 # order; LED one of 2-6

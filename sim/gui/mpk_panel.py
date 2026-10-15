@@ -136,7 +136,9 @@ class LedOverlay(QGraphicsRectItem):
 
     `on_press(down)` is called when it is pressed (down=True) and released.
     Left click: momentary. Right click: latch (stays pressed until the next
-    right click), so several buttons can be held at once.
+    right click), so several buttons can be held at once. Latched buttons
+    marked `modifier` in the TOML (SHIFT) release themselves after the next
+    press of another button.
     """
 
     def __init__(self, rect, radius=4, on_press=None):
@@ -243,6 +245,14 @@ class PanelView(QGraphicsView):
             return
         verb = "Press" if down else "Release"
         self.monitor.send(f"keys {verb} {matrix[0]} {matrix[1]}")
+        # Sticky modifiers (SHIFT): a latched modifier is released after the
+        # next press of any other button, like on-screen keyboards.
+        if not down and not self.buttons[name][1].get("modifier"):
+            for other, (item, info) in self.buttons.items():
+                if info.get("modifier") and item.latched and other != name:
+                    item.latched = False
+                    item.update()
+                    self.press_button(other, info.get("matrix"), False)
 
     def show_framebuffer(self, data):
         # The framebuffer is already Qt's 1-bit format: MSB = leftmost pixel.
