@@ -63,7 +63,9 @@ for the wheels, joystick and the two wipers of each endless knob. Details in
 ## Keys, encoder and clock input
 
 - Key matrix: row address on PC0–PC3 into a decoder (rows 0–12), 8 columns
-  on PC8–PC15 (active low). Buttons in rows 10–12, keybed probably rows 0–9.
+  on PC8–PC15 (active low). Buttons in rows 10–12; keybed in rows 0–9, two
+  contacts per key (velocity from the time between them).
+- MIDI OUT: USART1, transmitted by DMA (DMA1 channel 4).
 - Encoder: quadrature on PC4/PC5, push in the matrix (row 11, PC14).
 - PA6: probably CLOCK IN (the firmware times its edges to get a tempo).
 

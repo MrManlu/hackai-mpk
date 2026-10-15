@@ -100,12 +100,15 @@ Details in [simulator.md](simulator.md).
 - [ ] Map buttons to matrix positions and LED outputs.
 - [x] Analog inputs: pads, knobs, wheels, joystick (ADC + multiplexers).
 - [x] Encoder (quadrature on PC4/PC5, push in the matrix).
-- [ ] Keybed (matrix rows 0-9, velocity from contact timestamps).
+- [x] Keybed (matrix rows 0-9, velocity from contact timestamps).
+- [x] MIDI OUT monitor (USART1).
+- [ ] MIDI IN and an ALSA bridge.
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems
 
-- [ ] MIDI: DIN in/out (UART) and USB MIDI.
+- [ ] MIDI: DIN in/out (UART) and USB MIDI. OUT decoded in the simulator;
+      keybed velocity curve documented in [simulator.md](simulator.md#keybed).
 - [ ] Pad LEDs: driver and colour palette.
 - [ ] Arpeggiator: data model and step engine.
 - [ ] Display and ADC (battery indicator).

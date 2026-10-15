@@ -22,6 +22,12 @@
 // Monitor commands (for `keys`):
 //   Press 10 2 / Release 10 2    key at row 10, column 2
 //   Pressed                      list of pressed keys
+//   KeyDown 12 4000              keybed key 12: first contact now, second
+//                                contact 4000 us later (velocity = speed)
+//   KeyUp 12                     second contact opens, first one 2 ms later
+//
+// Keybed (MPK Mini Plus, FUN_0800a562): key k uses column k % 8 of row
+// 2*(k/8) (first, upper contact) and row 2*(k/8)+1 (second contact).
 //   ReleaseAll                   release every key (a reset keeps them held)
 //
 using System.Collections.Generic;
@@ -29,6 +35,7 @@ using System.Collections.Generic;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
+using Antmicro.Renode.Peripherals.Timers;
 
 namespace Antmicro.Renode.Peripherals.Miscellaneous
 {
@@ -45,7 +52,49 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 connections[c] = new GPIO();
             }
             Connections = connections;
+            scheduled = new List<(ulong due, int row, int column, bool down)>();
+            timer = new LimitTimer(machine.ClockSource, 1000000, this, "contacts",
+                                   limit: TickMicroseconds, enabled: false,
+                                   eventEnabled: true, autoUpdate: true);
+            timer.LimitReached += RunScheduled;
             Reset();
+        }
+
+        // Plays a keybed key: first contact now, second one `travelMicroseconds`
+        // later. Shorter travel = faster key = higher velocity.
+        public void KeyDown(int key, int travelMicroseconds = 5000)
+        {
+            Set(2 * (key / 8), key % 8, true);
+            Schedule(travelMicroseconds, 2 * (key / 8) + 1, key % 8, true);
+        }
+
+        public void KeyUp(int key)
+        {
+            Set(2 * (key / 8) + 1, key % 8, false);
+            Schedule(2000, 2 * (key / 8), key % 8, false);
+        }
+
+        private void Schedule(int microseconds, int row, int column, bool down)
+        {
+            scheduled.Add((now + (ulong)System.Math.Max(microseconds, 1), row, column, down));
+            timer.Enabled = true;
+        }
+
+        private void RunScheduled()
+        {
+            now += TickMicroseconds;
+            for(var i = 0; i < scheduled.Count; i++)
+            {
+                if(scheduled[i].due <= now)
+                {
+                    Set(scheduled[i].row, scheduled[i].column, scheduled[i].down);
+                    scheduled.RemoveAt(i--);
+                }
+            }
+            if(scheduled.Count == 0)
+            {
+                timer.Enabled = false;
+            }
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -155,6 +204,12 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 Connections[c].Set(!low);
             }
         }
+
+        private readonly List<(ulong due, int row, int column, bool down)> scheduled;
+        private readonly LimitTimer timer;
+        private ulong now;   // microseconds counted by the timer while it runs
+
+        private const ulong TickMicroseconds = 20;
 
         private readonly bool[] address;
         private readonly int rows;

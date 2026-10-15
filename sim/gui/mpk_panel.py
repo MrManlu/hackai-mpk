@@ -58,6 +58,7 @@ class Monitor:
         self.poll_interval = poll_interval
         self.commands = queue.Queue()
         self.results = queue.Queue()
+        self.midi_count = 0
         self.running = True
         self.thread = threading.Thread(target=self.run, daemon=True)
 
@@ -99,6 +100,15 @@ class Monitor:
             values = (leds or "").split()
             if len(values) == LED_OUTPUTS:
                 self.results.put(("leds", [int(v) for v in values]))
+            try:
+                count = int(self.execute("midiOut Count"), 0)   # Renode replies in hex
+            except ValueError:
+                count = self.midi_count
+            if count != self.midi_count:
+                new = min(count - self.midi_count, 200)
+                self.midi_count = count
+                lines = self.execute(f"midiOut Messages {new}").splitlines()
+                self.results.put(("midi", [l for l in lines if " s  " in l]))
             time.sleep(self.poll_interval)
         try:
             self.sock.sendall(b"quit\n")
@@ -298,6 +308,54 @@ class EncoderItem(QGraphicsEllipseItem):
         self.update()
 
 
+BLACK_KEYS = {1, 3, 6, 8, 10}
+
+
+class KeyItem(QGraphicsRectItem):
+    """A keybed key. The click height sets the speed of the key: near the
+    front edge (bottom) is fast and loud, near the back is slow and soft.
+    Right click latches the key down."""
+
+    def __init__(self, rect, key, press):
+        super().__init__(rect)
+        self.key = key
+        self.press_cb = press
+        self.down = False
+        self.latched = False
+        self.setPen(Qt.NoPen)
+        self.setAcceptedMouseButtons(Qt.LeftButton | Qt.RightButton)
+        self.setZValue(2 if key % 12 in BLACK_KEYS else 1)
+
+    def travel_from_y(self, y):
+        r = self.rect()
+        depth = min(1.0, max(0.0, (y - r.top()) / r.height()))   # 0 back, 1 front
+        return int(80000 * (1 - depth) ** 2 + 2000)               # 82 ms .. 2 ms
+
+    def set_down(self, down, travel=6000):
+        if down != self.down:
+            self.down = down
+            self.press_cb(self.key, down, travel)
+            self.update()
+
+    def paint(self, painter, option, widget=None):
+        if self.down:
+            painter.setBrush(QColor(60, 140, 255, 110 if self.key % 12 in BLACK_KEYS else 80))
+            painter.setPen(QPen(QColor(255, 200, 0), 3) if self.latched else Qt.NoPen)
+            painter.drawRoundedRect(self.rect(), 2, 2)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.latched = not self.latched
+            self.set_down(self.latched, self.travel_from_y(event.scenePos().y()))
+            return
+        if not self.latched:
+            self.set_down(True, self.travel_from_y(event.scenePos().y()))
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and not self.latched:
+            self.set_down(False)
+
+
 class WheelItem(QGraphicsRectItem):
     """Pitch or modulation wheel: drag up/down. With `spring`, it goes back
     to rest when released (pitch)."""
@@ -431,12 +489,21 @@ class PanelView(QGraphicsView):
             send = (lambda angle, i=info: self.set_knob(i, angle))
             item = KnobItem(element_rect(self.renderer, name), send)
             scene.addItem(item)
-            self.analog_items.append((item, lambda it=item: it.send(it.angle)))
+            # Knobs are not sent at connect: any initial value looks like a
+            # turn to the firmware. The first turn from the GUI jumps once.
+            self.analog_items.append((item, lambda: None))
         for name, info in analog.get("wheels", {}).items():
             send = (lambda value, i=info: self.set_input(i["input"], value))
             item = WheelItem(element_rect(self.renderer, name), info, send)
             scene.addItem(item)
             self.analog_items.append((item, lambda it=item: it.send(it.value())))
+        self.keys = []
+        for k in range(37):
+            item = KeyItem(element_rect(self.renderer, f"key{k}"), k, self.press_key)
+            scene.addItem(item)
+            self.keys.append(item)
+        self.setFocusPolicy(Qt.StrongFocus)
+
         encoder = config.get("encoder")
         if encoder:
             push = encoder["push"]
@@ -462,8 +529,10 @@ class PanelView(QGraphicsView):
             scene.addItem(item)
             self.buttons[name] = (item, info)
 
-    LEGEND = ("Click: press  ·  Right-click: hold / release  (SHIFT: until the next button)"
-              "  ·  Knobs, encoder: wheel or drag (encoder click: push)  ·  Wheels, joystick: drag")
+    LEGEND = ("Click: press  ·  Right-click: hold / release (SHIFT: until the next button)"
+              "  ·  Keys: click lower = louder\n"
+              "Knobs, encoder: wheel or drag (encoder click: push)  ·  Wheels, joystick: drag"
+              "  ·  Computer keyboard: A W S E D F T G Y H U J K O L")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -476,7 +545,7 @@ class PanelView(QGraphicsView):
         painter.resetTransform()
         painter.setPen(QColor(150, 150, 155))
         font = painter.font()
-        font.setPointSizeF(8.5)
+        font.setPointSizeF(8)
         painter.setFont(font)
         area = self.viewport().rect().adjusted(0, 0, -10, -6)
         painter.drawText(area, Qt.AlignRight | Qt.AlignBottom, self.LEGEND)
@@ -498,6 +567,32 @@ class PanelView(QGraphicsView):
                     item.latched = False
                     item.update()
                     self.press_button(other, info.get("matrix"), False)
+
+    # Computer keyboard: one octave and a bit from the lowest C of the keybed.
+    COMPUTER_KEYS = {Qt.Key_A: 0, Qt.Key_W: 1, Qt.Key_S: 2, Qt.Key_E: 3, Qt.Key_D: 4,
+                     Qt.Key_F: 5, Qt.Key_T: 6, Qt.Key_G: 7, Qt.Key_Y: 8, Qt.Key_H: 9,
+                     Qt.Key_U: 10, Qt.Key_J: 11, Qt.Key_K: 12, Qt.Key_O: 13, Qt.Key_L: 14}
+
+    def press_key(self, key, down, travel):
+        if down:
+            self.monitor.send(f"keys KeyDown {key} {travel}")
+        else:
+            self.monitor.send(f"keys KeyUp {key}")
+
+    def keyPressEvent(self, event):
+        key = self.COMPUTER_KEYS.get(event.key())
+        if key is not None and not event.isAutoRepeat():
+            self.keys[key].set_down(True, 6000)
+            return
+        super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        key = self.COMPUTER_KEYS.get(event.key())
+        if key is not None and not event.isAutoRepeat():
+            if not self.keys[key].latched:
+                self.keys[key].set_down(False)
+            return
+        super().keyReleaseEvent(event)
 
     def set_input(self, position, value):
         self.monitor.send(f"adc1 SetInput {position[0]} {position[1]} {int(value)}")
@@ -638,6 +733,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.panel)
 
         self.add_dock("Log", self.log, Qt.BottomDockWidgetArea)
+        self.midi = QPlainTextEdit(readOnly=True)
+        self.midi.setMaximumBlockCount(2000)
+        self.midi.setStyleSheet("font-family: monospace;")
+        self.add_dock("MIDI OUT (DIN)", self.midi, Qt.BottomDockWidgetArea)
         self.leds = LedPanel()
         self.add_dock("LED outputs", self.leds, Qt.RightDockWidgetArea)
         matrix = config["matrix"]
@@ -660,6 +759,10 @@ class MainWindow(QMainWindow):
         latest = {}
         while not self.monitor.results.empty():
             kind, value = self.monitor.results.get()
+            if kind == "midi":
+                for line in value:
+                    self.midi.appendPlainText(line)
+                continue
             if kind == "message":
                 self.log.appendPlainText(value)
                 if value == "connected to Renode":

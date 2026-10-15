@@ -12,6 +12,7 @@ include $ORIGIN/peripherals/SpiRecorder.cs
 include $ORIGIN/peripherals/ShiftRegisterLeds.cs
 include $ORIGIN/peripherals/KeyMatrix.cs
 include $ORIGIN/peripherals/RotaryEncoder.cs
+include $ORIGIN/peripherals/MidiMonitor.cs
 
 mach create "mpk"
 machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl

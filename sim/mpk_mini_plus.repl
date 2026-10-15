@@ -44,3 +44,8 @@ encoder: Miscellaneous.RotaryEncoder @ sysbus 0xA0000010
 
 gpioPortC:
     [0-3] -> keys@[0-3]
+
+// MIDI OUT (5-pin DIN) on USART1, sent by DMA. Simulator-only monitor that
+// decodes what the firmware transmits: `midiOut Messages 20`.
+midiOut: Miscellaneous.MidiMonitor @ sysbus 0xA0000020
+    uart: usart1

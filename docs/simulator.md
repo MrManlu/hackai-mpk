@@ -27,7 +27,9 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Panel GUI (PySide6) | ✅ OLED, pad and LED outputs, matrix explorer |
 | Analog inputs: ADC1 + multiplexers (pads, knobs, wheels, joystick) | ✅ see [Analog inputs](#analog-inputs) |
 | Encoder (turn on PC4/PC5, push in the key matrix) | ✅ |
-| Keybed, MIDI | ⚪ not modelled yet |
+| Keybed (37 keys, velocity from two contacts) | ✅ see [Keybed](#keybed) |
+| MIDI OUT (DIN) monitor | ✅ `midiOut Messages`, GUI panel |
+| MIDI IN, USB MIDI, ALSA bridge | ⚪ not yet |
 
 ## Files
 
@@ -44,6 +46,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/peripherals/AT32_ADC.cs` | ADC1 with external 8:1 multiplexers (select PB0–PB2): scan, continuous, DMA; `adc1 SetInput ch mux value` |
 | `sim/scripts/analog_sweep.py` | `make analog-sweep`: drives every analog input and reports what changes |
 | `sim/peripherals/KeyMatrix.cs` | Key matrix behind a row decoder (PC0–PC3 select row 0–12, PC8–PC15 read columns); `keys Press r c` / `keys Release r c` |
+| `sim/peripherals/MidiMonitor.cs` | Decodes the MIDI bytes USART1 transmits (DIN OUT): `midiOut Messages 20` |
 | `sim/peripherals/RotaryEncoder.cs` | Detented quadrature encoder on PC4/PC5; `encoder Turn n` |
 | `sim/scripts/matrix_sweep.py` | `make matrix-sweep`: presses every position on a fresh boot and reports what changes (`build/reports/matrix_sweep.md`) |
 | `sim/gui/mpk_panel.py` | The panel GUI: starts Renode with its monitor on TCP and polls the OLED and LEDs |
@@ -105,7 +108,7 @@ timestamps are what velocity needs. That gives **13 × 8 = 104 positions**:
 
 | Rows | What | Evidence |
 |---|---|---|
-| 0–9 | Probably the keybed (37 keys × 2 contacts for velocity = 74) | No visible effect when pressed (`make matrix-sweep`) |
+| 0–9 | The keybed: two contacts per key, see [Keybed](#keybed) | `FUN_0800a562` |
 | 10–12, columns 0–5 | The 18 buttons | LEDs and screens change; see the map below |
 | 11, column 6 (PC14) | Encoder push ("Enter") | Loads the program in the "Load Program" screen |
 
@@ -239,3 +242,40 @@ GUI: mouse wheel or vertical drag to turn, click to push.
 Related finding: **PA6** is polled by `FUN_0800fe3c`, which measures the
 time between edges to derive a tempo: almost certainly the **CLOCK IN**
 jack (sync input).
+
+## Keybed
+
+Rows 0–9 of the key matrix, in pairs (`FUN_0800a562`): key *k* (0–36) is
+column *k* mod 8 of row 2·(*k* div 8) (**first, upper contact**) and of row
+2·(*k* div 8) + 1 (**second contact**). Key 0 is note 48 (C3), key 36 note 84
+(C6) at the default octave.
+
+- First contact closes: the event's timestamp is stored.
+- Second contact closes: **Δt = t₂ − t₁** (ticks of 20 µs) gives the velocity
+  through a piecewise-linear curve, and the Note On is sent.
+- First contact opens: Note Off.
+
+Default curve (thresholds at `0x20000420`, values at `0x20000428`, velocity =
+128 − value):
+
+| Δt | Velocity |
+|---|---|
+| ≤ 2.8 ms (140 ticks) | 127 |
+| 2.8 → 8 ms | 127 → 96 |
+| 8 → 20 ms | 96 → 64 |
+| 20 → 96 ms | 64 → 8 |
+| > 96 ms | 8 |
+
+Black keys (mask `0x54A` over the 12 notes: C#, D#, F#, G#, A#) use the
+thresholds scaled to 90 % (`0x20000658` = 9 tenths): shorter travel.
+
+Checked in the simulator (`keys KeyDown k travel_us`): 2 ms → 127, 5 ms → 115,
+15 ms → 78, 60 ms → 35, 150 ms → 8; a black key at 5 ms → 112.
+
+In the GUI: click a key (lower on the key = faster = louder), right click to
+hold, or use the computer keyboard (A W S E D F T G Y H U J K O L from C3).
+The **MIDI OUT (DIN)** panel shows what the firmware sends.
+
+Note: at boot the analog controls go from 0 to their rest value, which the
+firmware sees as a move; it shows "JOYSTICK" for about a second before the
+main screen.
