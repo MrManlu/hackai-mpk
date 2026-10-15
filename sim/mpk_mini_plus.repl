@@ -3,8 +3,9 @@
 
 using "at32f415.repl"
 
-// SSD1306 OLED on SPI2. D/C on PB14 (low = command), CS on PB12 and RESET
-// on PB10 are not modelled yet.
+// SSD1306 OLED on SPI2. D/C on PB14 (low = command), CS on PB12 (active
+// low). Another device shares SPI2 with its own CS (see docs/display.md).
+// RESET on PB10 is not modelled.
 oled: Video.SSD1306 @ spi2
     width: 128
     height: 32
@@ -19,6 +20,7 @@ leds: Miscellaneous.ShiftRegisterLeds @ spi1
 
 gpioPortB:
     4 -> leds@0
+    12 -> oled@1
     14 -> oled@0
 
 // Button matrix: rows PC0-PC3 (outputs, active low), columns PC8-PC13

@@ -85,6 +85,7 @@ Blockers found so far:
 | Bootloader stays in update mode: unpressed keys read 0 | `KeyMatrix` model: columns read high when no key is pressed |
 | Application waits for the USB core reset (`GRSTCTL.AHBIDL`, `CSFTRST`) | `AT32_OTGFS` stub |
 | Application enters the factory test mode (version screen) | Same as above: keys released |
+| OLED picture scrolls after pressing a key | Model the OLED chip select (PB12): the 3 bytes sent on each key event belong to another SPI2 device (CV DAC?) |
 
 ### Key matrix and power-up key combinations
 

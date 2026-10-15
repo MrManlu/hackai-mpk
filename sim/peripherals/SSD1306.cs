@@ -12,6 +12,9 @@
 // Connections in the .repl:
 //   oled: Video.SSD1306 @ spi2       (SPI bytes)
 //   gpioPortB: 14 -> oled@0          (D/C: low = command, high = data)
+//   gpioPortB: 12 -> oled@1          (CS, active low: bytes are ignored
+//                                     while high, they belong to another
+//                                     device on the same bus)
 //
 using System;
 using System.Collections.Generic;
@@ -43,7 +46,14 @@ namespace Antmicro.Renode.Peripherals.Video
 
         public void OnGPIO(int number, bool value)
         {
-            dataMode = value;
+            if(number == 0)
+            {
+                dataMode = value;
+            }
+            else if(number == 1)
+            {
+                selected = !value;
+            }
         }
 
         public override void Reset()
@@ -68,6 +78,11 @@ namespace Antmicro.Renode.Peripherals.Video
 
         public byte Transmit(byte data)
         {
+            if(!selected)
+            {
+                ignoredBytes++;
+                return 0;
+            }
             if(dataMode)
             {
                 dataBytes++;
@@ -113,6 +128,7 @@ namespace Antmicro.Renode.Peripherals.Video
         public string Statistics()
         {
             return $"commands: {commandBytes}, data: {dataBytes} ({nonZeroDataBytes} non-zero), "
+                + $"ignored (CS high): {ignoredBytes}, "
                 + $"display {(displayOn ? "on" : "off")}, mode {addressingMode}, "
                 + $"page {page} column {column}, D/C {(dataMode ? "data" : "command")}";
         }
@@ -308,6 +324,8 @@ namespace Antmicro.Renode.Peripherals.Video
         private readonly List<byte> args;
 
         private bool dataMode;
+        private bool selected = true;   // until a CS line is connected
+        private ulong ignoredBytes;
         private ulong commandBytes, dataBytes, nonZeroDataBytes;
         private byte? pendingCommand;
         private AddressingMode addressingMode;

@@ -53,6 +53,17 @@ Before the sequence, PB10 (RESET) is pulled low and released, waiting about
 - The application sends the framebuffer through **DMA1 channel 5**, which is
   the SPI2_TX channel on STM32F1-style parts.
 
+## Shared bus: a second device on SPI2
+
+The OLED is **not alone on SPI2**. In the simulator, with the OLED's chip
+select (PB12) modelled, 3-byte transfers go to another device every time a
+key is pressed or released (and 5 bytes at boot), with PB12 high. Before CS
+was modelled, those bytes landed in the OLED and shifted the picture.
+
+**Hypothesis:** the DAC for the CV/Gate/Mod outputs (a new pitch voltage per
+note; 24-bit words are typical of SPI DACs). To find: its CS pin, the chip,
+and the meaning of the 3 bytes.
+
 ## Print routines
 
 | Function (analysis name) | Image | Arguments | Notes |

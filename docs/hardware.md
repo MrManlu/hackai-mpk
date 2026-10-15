@@ -46,7 +46,7 @@ SSD1306-compatible OLED driven over **SPI2**. Details in [display.md](display.md
 |---|---|---|
 | SCK | PB13 (SPI2 default) | hypothesis |
 | MOSI | PB15 (SPI2 default) | hypothesis |
-| CS | PB12 | from code |
+| CS | PB12 | from code; confirmed in the simulator (another device shares SPI2, see [display.md](display.md#shared-bus-a-second-device-on-spi2)) |
 | D/C | PB14 | from code |
 | RESET | PB10 | from code |
 
