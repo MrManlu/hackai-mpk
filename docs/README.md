@@ -7,6 +7,7 @@ Reverse-engineering notes for the AKAI MPK Mini Plus.
 | [decomp-plan.md](decomp-plan.md) | Decompilation strategy and milestones |
 | [tools.md](tools.md) | Requirements, `make` targets and the daily workflow |
 | [hardware.md](hardware.md) | MCU, debug header, display wiring and other board-level facts |
+| [bootloader.md](bootloader.md) | Boot decision and USB HID update protocol, with flow diagrams |
 | [firmware-image.md](firmware-image.md) | How to get the firmware from the official updater and how the image is laid out |
 | [ghidra-setup.md](ghidra-setup.md) | Why the Ghidra project is built the way it is, lessons from the manual attempts |
 | [subsystems.md](subsystems.md) | First map of the subsystems (MIDI, LEDs, ADC, timers) |

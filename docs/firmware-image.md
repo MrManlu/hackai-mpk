@@ -76,7 +76,8 @@ Open questions:
 - [ ] Format of the data blocks at `0x37000` and of the trailer.
 - [x] How the bootloader checks the application before jumping to it: only
       the two marker bytes, no checksum (see [Boot sequence](#boot-sequence)).
-- [ ] Protocol used by the updater over USB (probably SysEx).
+- [x] Protocol used by the updater over USB: HID, 32-byte "UO"/"UI"
+      packets, see [bootloader.md](bootloader.md).
 - [ ] Meaning of the other trailer bytes.
 
 ## Boot sequence
