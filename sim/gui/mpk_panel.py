@@ -244,6 +244,7 @@ class PanelView(QGraphicsView):
                      "(set it in sim/gui/mpk_mini_plus.toml)")
             return
         verb = "Press" if down else "Release"
+        self.log(f"{verb.lower()} {name} (matrix {matrix[0]},{matrix[1]})")
         self.monitor.send(f"keys {verb} {matrix[0]} {matrix[1]}")
         # Sticky modifiers (SHIFT): a latched modifier is released after the
         # next press of any other button, like on-screen keyboards.

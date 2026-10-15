@@ -17,8 +17,10 @@ first_output = 24
 # Red = 2 is the colour of all pads at power-up with program 1 ("MPC"), seen
 # on the real unit. Green and blue are a guess.
 rgb_offsets = [2, 0, 1]
-# Which triplet (0-7) lights each pad, pad1..pad8. Guess: in order.
-triplet = [0, 1, 2, 3, 4, 5, 6, 7]
+# Which triplet (0-7) lights each pad, pad1..pad8. Reversed: in PROG SELECT
+# mode the real unit lights PAD 1 and the firmware lights the last triplet
+# (outputs 45-47). Only PAD 1 is confirmed; the rest assume the same order.
+triplet = [7, 6, 5, 4, 3, 2, 1, 0]
 
 # Buttons with a LED. `led` is the output of the shift-register chain, or a
 # table of outputs per colour for multi-colour LEDs ({ red = 21, green = 22 }),

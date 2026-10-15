@@ -42,13 +42,17 @@ Confirmed colours:
 
 | Outputs | LED | Evidence |
 |---|---|---|
+| 45–47 | PAD 1 (the triplet lit in PROG SELECT mode); outputs 47 lit = red at power-up | Real unit: PAD 1 lights; red pads at power-up |
 | 21 / 22 | BANK A/B button, **red / green** | Real unit: the button turns from red (bank A) to green (bank B). Simulator: pressing it swaps output 21 for 22 and back |
 
 To find out:
 
 - [ ] Which channel of each triplet is red, green and blue. Knowing the colour
       of the pads at power-up identifies the channel at offset 2.
-- [ ] Which pad each triplet belongs to (press pads in the simulator and watch).
+- [ ] Which pad each triplet belongs to. **PAD 1 = last triplet (outputs
+      45–47)**, confirmed: in PROG SELECT mode the real unit lights PAD 1 and
+      the firmware lights only that triplet. The other pads are assumed to
+      follow in reverse order (pad n = triplet 8 − n).
 - [x] Which button each other output belongs to: first pass done with
       `make matrix-sweep` (transport LEDs among 2–6 still to assign).
 - [ ] Where the firmware computes the 224-byte buffer from the colours (the

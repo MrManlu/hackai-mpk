@@ -115,6 +115,13 @@ The transport LEDs are among outputs 2–6, not yet assigned. BANK A/B is a
 two-colour LED: output 21 is red (bank A), 22 green (bank B), confirmed on the
 real unit.
 
+**PROG SELECT has two modes.** While held: "Load Program / Press pad to
+Load Program" (hold + pad, as in the user guide). Once released: "Load
+Program / PGM1: MPC / Enter to Load", browsing programs with the encoder and
+loading with its push (LED 10 stays on). In the GUI, latch PROG SELECT with a
+right click to use the pad mode. Neither the pads nor the encoder are
+modelled yet.
+
 Power-up combinations (both keys held while the firmware checks):
 
 | Who | Row | Columns | Buttons (from the map) | Effect |
