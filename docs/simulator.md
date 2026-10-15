@@ -26,7 +26,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Key matrix (decoder on PC0–PC3, columns PC8–PC13) | ✅ model; 18 buttons mapped (rows 10–12) |
 | Panel GUI (PySide6) | ✅ OLED, pad and LED outputs, matrix explorer |
 | Analog inputs: ADC1 + multiplexers (pads, knobs, wheels, joystick) | ✅ see [Analog inputs](#analog-inputs) |
-| Keybed, encoder, MIDI | ⚪ not modelled yet |
+| Encoder (turn on PC4/PC5, push in the key matrix) | ✅ |
+| Keybed, MIDI | ⚪ not modelled yet |
 
 ## Files
 
@@ -42,7 +43,8 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | `sim/peripherals/SpiRecorder.cs` | Records raw SPI bursts with timestamps, for reverse engineering a bus |
 | `sim/peripherals/AT32_ADC.cs` | ADC1 with external 8:1 multiplexers (select PB0–PB2): scan, continuous, DMA; `adc1 SetInput ch mux value` |
 | `sim/scripts/analog_sweep.py` | `make analog-sweep`: drives every analog input and reports what changes |
-| `sim/peripherals/KeyMatrix.cs` | Key matrix behind a row decoder (PC0–PC3 select row 0–12, PC8–PC13 read columns); `keys Press r c` / `keys Release r c` |
+| `sim/peripherals/KeyMatrix.cs` | Key matrix behind a row decoder (PC0–PC3 select row 0–12, PC8–PC15 read columns); `keys Press r c` / `keys Release r c` |
+| `sim/peripherals/RotaryEncoder.cs` | Detented quadrature encoder on PC4/PC5; `encoder Turn n` |
 | `sim/scripts/matrix_sweep.py` | `make matrix-sweep`: presses every position on a fresh boot and reports what changes (`build/reports/matrix_sweep.md`) |
 | `sim/gui/mpk_panel.py` | The panel GUI: starts Renode with its monitor on TCP and polls the OLED and LEDs |
 | `sim/gui/mpk_mini_plus.svg` | The panel drawing. Every control has an `id`; editable in Inkscape |
@@ -96,14 +98,16 @@ Blockers found so far:
 
 The keys are read through a **row decoder**: the firmware writes a row
 number (0–12) on PC0–PC3, a decoder (74HC154-style) pulls that row low, and
-PC8–PC13 read 6 active-low columns. In normal operation it counts 0, 1, …, 12
-over and over, reading the columns two or three times per row. That gives
-**13 × 6 = 78 positions**:
+PC8–PC15 read 8 active-low columns. In normal operation (`FUN_0800a4c8`) it
+counts 0, 1, …, 12 over and over, compares each row with its previous reading
+and queues every change with a 64-bit timestamp (32-entry queue): the
+timestamps are what velocity needs. That gives **13 × 8 = 104 positions**:
 
 | Rows | What | Evidence |
 |---|---|---|
-| 0–9 | Probably the keybed (37 keys; velocity usually needs two contacts per key) | No visible effect when pressed (`make matrix-sweep`) |
-| 10–12 | The 18 buttons | LEDs and screens change; see the map below |
+| 0–9 | Probably the keybed (37 keys × 2 contacts for velocity = 74) | No visible effect when pressed (`make matrix-sweep`) |
+| 10–12, columns 0–5 | The 18 buttons | LEDs and screens change; see the map below |
+| 11, column 6 (PC14) | Encoder push ("Enter") | Loads the program in the "Load Program" screen |
 
 Button map, also in `sim/gui/mpk_mini_plus.toml` (C = confirmed by the screen
 or an unambiguous behaviour, O = follows the panel order):
@@ -117,6 +121,11 @@ or an unambiguous behaviour, O = follows the panel order):
 The transport LEDs are among outputs 2–6, not yet assigned. BANK A/B is a
 two-colour LED: output 21 is red (bank A), 22 green (bank B), confirmed on the
 real unit.
+
+**Hold-to-edit buttons.** ARP and PROG SELECT (and probably others) show a
+settings screen while held: turn the encoder to change values, and the
+release does the button's own action (ARP toggles the arpeggiator). In the
+GUI, hold them with a right click.
 
 **PROG SELECT has two modes.** While held: "Load Program / Press pad to
 Load Program" (hold + pad, as in the user guide). Once released: "Load
@@ -214,3 +223,19 @@ map (`make analog-sweep`):
 In the GUI: click a pad (right click to hold), turn a knob with the mouse
 wheel or by dragging, drag the wheels and the joystick (pitch and joystick
 spring back).
+
+## Encoder
+
+Quadrature on **PC4 (A) and PC5 (B)**, polled by `FUN_0801df48`: state =
+PC5:PC4, both high at rest. A detent goes 3 → 1 → 0 → 2 → 3 (+1) or
+3 → 2 → 0 → 1 → 3 (−1), counted when the state returns to 3 after at least
+three changes. Every 10 ms (500 ticks) the accumulated steps go to the
+handler of the active screen (13 menus). The push is in the key matrix at
+row 11, column 6 (PC14).
+
+`RotaryEncoder.cs` plays one state per millisecond of virtual time. In the
+GUI: mouse wheel or vertical drag to turn, click to push.
+
+Related finding: **PA6** is polled by `FUN_0800fe3c`, which measures the
+time between edges to derive a tempo: almost certainly the **CLOCK IN**
+jack (sync input).

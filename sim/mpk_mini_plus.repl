@@ -27,14 +27,20 @@ gpioPortB:
     14 -> oled@0
 
 // Key matrix: the firmware puts a row number (0-12) on PC0-PC3, a decoder
-// selects that row, and PC8-PC13 read the 6 columns (active low).
-// 13 x 6 = 78 positions: buttons and probably the keybed (two contacts per
-// key for velocity). See docs/simulator.md. `keys Press 10 2`.
+// selects that row, and PC8-PC15 read the 8 columns (active low).
+// 13 x 8 = 104 positions: the 18 buttons (rows 10-12) and probably the
+// keybed (two contacts per key for velocity). See docs/simulator.md.
 // Simulator-only: placed at an unused address so the monitor can reach it.
 keys: Miscellaneous.KeyMatrix @ sysbus 0xA0000000
     addressBits: 4
-    columns: 6
-    [0-5] -> gpioPortC@[8-13]
+    columns: 8
+    [0-7] -> gpioPortC@[8-15]
+
+// Encoder (PUSH TO ENTER): quadrature on PC4 (A) and PC5 (B), polled by
+// FUN_0801df48. `encoder Turn 1` / `encoder Turn -1`.
+encoder: Miscellaneous.RotaryEncoder @ sysbus 0xA0000010
+    0 -> gpioPortC@4
+    1 -> gpioPortC@5
 
 gpioPortC:
     [0-3] -> keys@[0-3]

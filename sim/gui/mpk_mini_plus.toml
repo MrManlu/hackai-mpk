@@ -29,7 +29,7 @@ triplet = [7, 6, 5, 4, 3, 2, 1, 0]
 # `modifier = true` makes a latched button (right click) release itself after
 # the next press of another button (sticky SHIFT),
 # `matrix` is [row, column] in the key matrix (row 0-12 selected through a
-# decoder on PC0-PC3, columns PC8-PC13). Found with `make matrix-sweep`:
+# decoder on PC0-PC3, columns PC8-PC15). Found with `make matrix-sweep`:
 #   confirmed  = the screen names the function (Arp Setup, Note Repeat, Load
 #                Program) or the behaviour is unambiguous
 #   order      = follows the button order on the panel; behaviour fits
@@ -57,7 +57,7 @@ btn_seq = { matrix = [12, 5], led = 1 }           # order: LED toggles
 
 [matrix]
 rows = 13
-columns = 6
+columns = 8
 
 # Analog inputs: [ADC channel, multiplexer position]. Found with
 # `make analog-sweep` (the firmware names each control on the OLED).
@@ -100,3 +100,10 @@ min = 110
 max = 3583
 rest = 1846
 radius = 30              # drag distance (panel units) for full deflection
+
+# Encoder (PUSH TO ENTER): quadrature on PC4/PC5 (`encoder Turn n`), push in
+# the key matrix at row 11, column 6 (PC14). Found by turning it in the
+# "Load Program" screen and pressing the PC14/PC15 positions.
+[encoder]
+id = "encoder"
+push = [11, 6]

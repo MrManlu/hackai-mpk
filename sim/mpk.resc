@@ -11,6 +11,7 @@ include $ORIGIN/peripherals/SSD1306.cs
 include $ORIGIN/peripherals/SpiRecorder.cs
 include $ORIGIN/peripherals/ShiftRegisterLeds.cs
 include $ORIGIN/peripherals/KeyMatrix.cs
+include $ORIGIN/peripherals/RotaryEncoder.cs
 
 mach create "mpk"
 machine LoadPlatformDescription $ORIGIN/mpk_mini_plus.repl
@@ -31,5 +32,6 @@ macro reset
     # GPIO ports forget the key matrix column levels on reset: drive them
     # again, or the bootloader sees two keys held (update mode).
     keys Reset
+    encoder Reset
 """
 runMacro $reset

@@ -240,6 +240,64 @@ class KnobItem(QGraphicsEllipseItem):
         self.last_y = y
 
 
+class EncoderItem(QGraphicsEllipseItem):
+    """Detented encoder: mouse wheel or vertical drag turns it (one detent
+    per wheel step or per 12 units of drag), click pushes it."""
+
+    def __init__(self, rect, turn, push):
+        super().__init__(rect)
+        self.turn_cb = turn
+        self.push_cb = push
+        self.angle = 0.0
+        self.last_y = None
+        self.dragged = 0.0
+        self.setPen(Qt.NoPen)
+        self.setAcceptedMouseButtons(Qt.LeftButton)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setToolTip("Turn: mouse wheel or drag up/down · Click: push")
+
+    def turn(self, detents):
+        self.angle = (self.angle + 18 * detents) % 360
+        self.turn_cb(detents)
+        self.update()
+
+    def paint(self, painter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+        r = self.rect()
+        painter.setPen(QPen(QColor("#444"), 2))
+        painter.setBrush(QColor("#1a1a1a") if self.last_y is None else QColor("#2c2c2c"))
+        painter.drawEllipse(r)
+        painter.save()
+        painter.translate(r.center())
+        painter.rotate(self.angle)
+        painter.setPen(QPen(QColor("#999"), 2))
+        painter.drawLine(QPointF(0, -r.height() / 2 + 4), QPointF(0, -r.height() / 2 + 10))
+        painter.restore()
+
+    def wheelEvent(self, event):
+        self.turn(1 if event.delta() > 0 else -1)
+
+    def mousePressEvent(self, event):
+        self.last_y = event.scenePos().y()
+        self.dragged = 0.0
+        self.push_cb(True)
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        y = event.scenePos().y()
+        self.dragged += self.last_y - y
+        self.last_y = y
+        while abs(self.dragged) >= 12:
+            step = 1 if self.dragged > 0 else -1
+            self.turn(step)
+            self.dragged -= 12 * step
+
+    def mouseReleaseEvent(self, event):
+        self.last_y = None
+        self.push_cb(False)
+        self.update()
+
+
 class WheelItem(QGraphicsRectItem):
     """Pitch or modulation wheel: drag up/down. With `spring`, it goes back
     to rest when released (pitch)."""
@@ -379,6 +437,15 @@ class PanelView(QGraphicsView):
             item = WheelItem(element_rect(self.renderer, name), info, send)
             scene.addItem(item)
             self.analog_items.append((item, lambda it=item: it.send(it.value())))
+        encoder = config.get("encoder")
+        if encoder:
+            push = encoder["push"]
+            item = EncoderItem(
+                element_rect(self.renderer, encoder["id"]),
+                lambda detents: self.monitor.send(f"encoder Turn {detents}"),
+                lambda down, p=push: self.monitor.send(
+                    f"keys {'Press' if down else 'Release'} {p[0]} {p[1]}"))
+            scene.addItem(item)
         joystick = analog.get("joystick")
         if joystick:
             send = (lambda x, y, j=joystick: (self.set_input(j["x"], x), self.set_input(j["y"], y)))
@@ -396,7 +463,7 @@ class PanelView(QGraphicsView):
             self.buttons[name] = (item, info)
 
     LEGEND = ("Click: press  ·  Right-click: hold / release  (SHIFT: until the next button)"
-              "  ·  Knobs: wheel or drag  ·  Wheels, joystick: drag")
+              "  ·  Knobs, encoder: wheel or drag (encoder click: push)  ·  Wheels, joystick: drag")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

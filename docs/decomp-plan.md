@@ -99,7 +99,8 @@ Details in [simulator.md](simulator.md).
 - [x] Button matrix model.
 - [ ] Map buttons to matrix positions and LED outputs.
 - [x] Analog inputs: pads, knobs, wheels, joystick (ADC + multiplexers).
-- [ ] Inputs: keybed, encoder.
+- [x] Encoder (quadrature on PC4/PC5, push in the matrix).
+- [ ] Keybed (matrix rows 0-9, velocity from contact timestamps).
 - [ ] MIDI DIN in/out bridged to a virtual ALSA MIDI port.
 
 ### M3 · Target subsystems

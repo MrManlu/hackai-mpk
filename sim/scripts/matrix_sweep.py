@@ -111,7 +111,7 @@ def main():
     parser.add_argument("--boot", type=float, default=3.0, help="virtual seconds to boot")
     parser.add_argument("--hold", type=float, default=0.4, help="virtual seconds to hold a key")
     parser.add_argument("--rows", type=int, default=13)
-    parser.add_argument("--columns", type=int, default=6)
+    parser.add_argument("--columns", type=int, default=8)
     args = parser.parse_args()
 
     renode = subprocess.Popen(
