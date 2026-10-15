@@ -84,7 +84,7 @@ Open questions:
 
 Found with the simulator ([simulator.md](simulator.md)) and Ghidra.
 
-**Bootloader** (`bootloader_POSSIBLE_BL`, `0x08003DC8`):
+**Bootloader** (`bootloader_main_BL`, `0x08003DC8`):
 
 1. Wait 100 ms (5000 SysTick ticks of 20 µs).
 2. If either byte at `0x0802E7FE` / `0x0802E7FF` is `0xFF` (erased flash, no

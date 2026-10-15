@@ -2,9 +2,10 @@ address,kind,name,type,status,notes
 0x08000BAC,label,SRAM_BASE_ADDR_BL,,named,
 0x08000BC8,func,crm_SOMETHING_BL,,named,
 0x080021B8,func,usb_related_POSSIBLE_BL,,named,
-0x080024E8,func,flashing_firmware_BL,,named,
+0x080024E8,func,update_process_packet_BL,,understood,"Update mode: handles one 32-byte 'UO' HID packet (C1 erase, C2 write, C3 finish, C4 version)."
 0x08002A3C,func,SPI2_transmit_BL,,named,
 0x08002A8C,func,SPI2_device_seems_LCD_init_BL,,named,
+0x08002D1C,func,oled_clear_page_BL,,named,Clears one 128-byte page (0-4) of the OLED buffer.
 0x08002D46,func,print_LCD_char_POSSIBLE_BL,,named,
 0x08002E58,func,print_LCD_BL,,named,
 0x08002E94,func,flash_unlock_BL,,named,
@@ -19,6 +20,7 @@ address,kind,name,type,status,notes
 0x08003098,label,FLASH_UNLOCK_KEY2_BL,,named,
 0x080030A0,label,BOOTLOADER_START_LAST_REGION_BL,,named,
 0x080030A4,label,BOOTLOADER_END_LAST_REGION_BL,,named,
+0x080031E4,func,usb_send_report_BL,,understood,"USB send: (endpoint, data, length); replies 'UI' on endpoint 0x81."
 0x0800330E,func,gpio_input_data_bit_read_BL,,named,
 0x0800332A,func,gpio_bits_set_BL,,named,
 0x08003332,func,gpio_bits_reset_BL,,named,
@@ -26,8 +28,8 @@ address,kind,name,type,status,notes
 0x080033FC,func,spi_i2s_data_transmit_BL,,named,
 0x08003400,func,spi_i2s_flag_get_BL,,named,
 0x0800360C,func,crm_SOMETHING2_BL,,named,
-0x08003DAC,func,HardFault_POSSIBLE_BL,,named,
-0x08003DC8,func,bootloader_POSSIBLE_BL,,named,
+0x08003DAC,func,system_reset_BL,,understood,NVIC_SystemReset: AIRCR = 0x05FA0004.
+0x08003DC8,func,bootloader_main_BL,,understood,Boot decision: app marker + SHIFT/PROG SELECT; update mode loop (docs/bootloader.md).
 0x08004150,func,ResetHandler_POSSIBLE_BL,,named,
 0x08004178,func,SW_breakpoint_L0_BL,,named,
 0x08004184,func,SW_breakpoint_L1_BL,,named,

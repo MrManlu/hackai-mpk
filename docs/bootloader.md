@@ -7,7 +7,7 @@ in the simulator.
 
 ## Boot decision
 
-`bootloader_POSSIBLE_BL` (`0x08003DC8`):
+`bootloader_main_BL` (`0x08003DC8`):
 
 ```mermaid
 flowchart TD
@@ -104,15 +104,17 @@ version, firmware version (BCD), and two bytes not checked by the bootloader
 - Per-packet 16-bit sums are the only integrity check: our own updater must
   verify the result (read back, or check the boot) itself.
 
-## Suggested names
+## Function names
 
-| Address | Current name | Suggested |
+Applied in `config/symbols.csv`:
+
+| Address | Name | Was |
 |---|---|---|
-| `0x08003DC8` | `bootloader_POSSIBLE_BL` | `bootloader_main_BL` |
-| `0x080024E8` | `flashing_firmware_BL` | `update_process_packet_BL` |
-| `0x08003DAC` | `HardFault_POSSIBLE_BL` | `system_reset_BL` (NVIC_SystemReset) |
-| `0x08002D1C` | `FUN_08002d1c` | `oled_clear_page_BL` |
-| `0x080031E4` | `FUN_080031e4` | `usb_send_report_BL` (endpoint, data, length) |
+| `0x08003DC8` | `bootloader_main_BL` | `bootloader_POSSIBLE_BL` |
+| `0x080024E8` | `update_process_packet_BL` | `flashing_firmware_BL` |
+| `0x08003DAC` | `system_reset_BL` (NVIC_SystemReset) | `HardFault_POSSIBLE_BL` |
+| `0x08002D1C` | `oled_clear_page_BL` | `FUN_08002d1c` |
+| `0x080031E4` | `usb_send_report_BL` (endpoint, data, length) | `FUN_080031e4` |
 
 ## Open questions
 
