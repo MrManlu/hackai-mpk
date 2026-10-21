@@ -47,7 +47,7 @@ Early stage. The table shows the plan, not finished features.
 | Custom screensaver image (`make screensaver`) | Mod (data) | ✅ Done, tested on a real unit |
 | Patch system: our C code + hooks (`make mod`) | Foundation | ✅ Done, tested on a real unit |
 | Own entries in the Global menu (THRU on/off) | Firmware | ✅ Done, tested on a real unit (setting only) |
-| MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
+| MIDI THRU on the MIDI OUT port | Firmware | 🟡 Works in the simulator |
 | Per-pad MIDI channel | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
 | New arpeggiator modes | Firmware | ⚪ Planned |

@@ -9,6 +9,7 @@ Reverse-engineering notes for the AKAI MPK Mini Plus.
 | [hardware.md](hardware.md) | MCU, debug header, display wiring and other board-level facts |
 | [bootloader.md](bootloader.md) | Boot decision and USB HID update protocol, with flow diagrams |
 | [updater.md](updater.md) | `tools/mpkflash.py`: image safety checks, flashing the simulator and the real unit over USB, anti-rollback |
+| [midi.md](midi.md) | MIDI routing (USB, DIN IN/OUT), its code, and our MIDI THRU |
 | [patching.md](patching.md) | Our own code in the stock image: layout, hooks, settings sector, `make mod` |
 | [programs.md](programs.md) | Program format (0x14B bytes): layout, where programs are stored, no free bytes |
 | [menus.md](menus.md) | OLED menus: the Global menu (SHIFT + STOP), its code, state and how to add entries |

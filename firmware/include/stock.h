@@ -49,6 +49,33 @@ void transpose_apply_POSSIBLE_APP(void);
 #define PROG_TPRT          0x15  /* 0-1 */
 #define PROG_TAPS          0x1C  /* 2-4 */
 
+/* --- MIDI (docs/midi.md) -------------------------------------------------- */
+
+/* DIN IN: 128-byte ring filled by USART1_IRQHandler. */
+uint16_t din_rx_count_APP(void);
+uint8_t din_rx_read_APP(void);
+#define DIN_IN_PAUSED (*(volatile uint8_t *)0x20004E0A) /* poll skipped while set */
+
+/* MIDI byte stream to USB-MIDI packets; returns 1 when *packet is complete.
+ * Packet word: CIN|cable (bits 31-24), then the MIDI bytes (23-0). */
+uint8_t midi_parser_feed_APP(uint8_t *state, uint8_t byte, uint32_t *packet);
+#define MIDI_PARSER_DIN ((uint8_t *)0x20004C78)
+
+/* A complete message: status, data1, data2. */
+void midi_message_handle_APP(uint8_t *message);
+
+/* USB-MIDI events for the host: 128-byte ring of 4-byte packets. */
+#define USB_STATE        (*(volatile uint8_t *)(0x200011B8 + 0x112)) /* 3 = configured */
+#define USB_CONFIGURED   3
+#define USB_IN_RING      ((volatile uint8_t *)0x200048B0)
+#define USB_IN_WRITE     (*(volatile uint16_t *)0x20004D86)
+
+/* DIN OUT: 64-byte ring, sent by DMA from the main loop. No overflow check. */
+void din_tx_queue_APP(uint8_t count, const uint8_t *bytes);
+#define DIN_TX_SIZE  64
+#define DIN_TX_WRITE (*(volatile uint8_t *)0x20004DFA)
+#define DIN_TX_READ  (*(volatile uint8_t *)0x20004DFB)
+
 /* --- Flash (docs/updater.md for the controller) --------------------------- */
 
 #define FLASH_OK 4  /* return value of the erase/program functions */

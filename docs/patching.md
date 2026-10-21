@@ -88,8 +88,8 @@ writes whole programs ([programs.md](programs.md#free-bytes)).
 
 `firmware/src/global_menu.c` replaces `global_menu_draw_APP` and
 `global_menu_encoder_APP` ([menus.md](menus.md)) with C versions that have a
-7th entry, ` THRU: Off/On`, stored in our settings. The setting does nothing
-yet: the MIDI THRU itself is the next step.
+7th entry, ` THRU: Off/On`, stored in our settings. The THRU itself is in
+`firmware/src/midi_thru.c`, see [midi.md](midi.md#midi-thru-hackai-mpk).
 
 `make mod-sim` (`sim/scripts/menu_check.py`) checks, in the simulator:
 

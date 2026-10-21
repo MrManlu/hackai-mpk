@@ -3,6 +3,7 @@
 
     make decompile F=bootloader_POSSIBLE_BL
     make decompile F="0x08003DC8 main"
+    make decompile-all              # every function, into build/decompiled.c
 
 Functions can be given by name or by address. Output is for reading only:
 do not paste it into the repository (see CONTRIBUTING notes in README.md).
@@ -30,8 +31,11 @@ def find_function(program, spec):
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("functions", nargs="+", help="function names or 0x addresses")
+    parser.add_argument("functions", nargs="*", help="function names or 0x addresses")
+    parser.add_argument("--all", action="store_true", help="every function, by address")
     args = parser.parse_args()
+    if not args.functions and not args.all:
+        parser.error("give function names or addresses, or --all")
 
     start_ghidra()
     from ghidra.app.decompiler import DecompInterface
@@ -41,8 +45,12 @@ def main():
         program = project.openProgram("/", PROGRAM_NAME, True)
         decompiler = DecompInterface()
         decompiler.openProgram(program)
-        for spec in args.functions:
-            function = find_function(program, spec)
+        if args.all:
+            targets = list(program.getFunctionManager().getFunctions(True))
+        else:
+            targets = [find_function(program, spec) for spec in args.functions]
+        for spec, function in zip(args.functions or [str(f.getEntryPoint()) for f in targets],
+                                  targets):
             if function is None:
                 print(f"// {spec}: no such function\n")
                 continue

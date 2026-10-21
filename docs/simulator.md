@@ -30,6 +30,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | Keybed (37 keys, velocity from two contacts) | ✅ see [Keybed](#keybed) |
 | MIDI OUT (DIN) monitor | ✅ `midiOut Messages`, GUI panel |
 | MIDI IN (DIN): `usart1 WriteChar` into the firmware's receive buffer | ✅ |
+| MIDI OUT monitor: SysEx (`F0 … F7`) shown whole (fixed 2026-10-21: the `F7` used to reset it) | ✅ |
 | MIDI bridge to JACK/PipeWire (`make gui JACK=1`) | ✅ |
 | USB MIDI | ⚪ not yet |
 

@@ -11,3 +11,7 @@ with = "hk_global_menu_draw"          # firmware/src/global_menu.c
 [[replace]]
 function = "global_menu_encoder_APP"  # 0x0801F3A8
 with = "hk_global_menu_encoder"
+
+[[replace]]
+function = "din_in_poll_APP"          # 0x0801240E
+with = "hk_din_in_poll"               # firmware/src/midi_thru.c

@@ -78,6 +78,14 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 Emit(new[] { b });   // real-time messages can appear anywhere
                 return;
             }
+            if(b == 0xF7 && current.Count > 0 && current[0] == 0xF0)
+            {
+                current.Add(b);      // end of SysEx: not a new status byte
+                Emit(current.ToArray());
+                current.Clear();
+                status = 0;
+                return;
+            }
             if(b >= 0x80)
             {
                 status = b;

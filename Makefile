@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim mod mod-sim clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile decompile-all sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim mod mod-sim clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -23,6 +23,7 @@ help:
 	@echo "make ghidra              build the Ghidra project from config/ (first time)"
 	@echo "make export              write names from Ghidra back to config/symbols.csv"
 	@echo "make decompile F=<fn>    print Ghidra's decompilation of functions (names or 0x addresses)"
+	@echo "make decompile-all       every function into build/decompiled.c (for grep)"
 	@echo "make report              generate analysis reports in build/reports/"
 	@echo "make setup-gui           install the simulator GUI dependencies (PySide6) in .venv"
 	@echo "make gui                 run the simulator with the MPK Mini Plus panel (PySide6)"
@@ -39,7 +40,7 @@ help:
 	@echo "make screensaver-sim     show the screensaver of build/mods/screensaver.bin in the simulator"
 	@echo "make mod                 build/mods/hackai.bin: stock firmware + our code (firmware/)"
 	@echo "make mod BASE=build/mods/screensaver.bin   same, on top of another image (screensaver)"
-	@echo "make mod-sim             check the mod in the simulator (Global menu, THRU setting)"
+	@echo "make mod-sim             check the mod in the simulator (Global menu, MIDI THRU)"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -79,6 +80,10 @@ export: | $(PYTHON)
 
 decompile: | $(PYTHON)
 	@$(PYTHON) tools/ghidra/decompile.py $(F) 2>/dev/null | grep -v '^INFO'
+
+decompile-all: | $(PYTHON)
+	$(PYTHON) tools/ghidra/decompile.py --all 2>/dev/null | grep -v '^INFO' > build/decompiled.c
+	@grep -c '^// ' build/decompiled.c | xargs echo "functions:"
 
 report: | $(PYTHON)
 	$(PYTHON) tools/ghidra/report_peripherals.py
@@ -143,7 +148,8 @@ mod:
 	python3 tools/build_mod.py --firmware $(BASE) --out $(MOD)
 
 mod-sim: mod $(SVD_RENODE)
-	RENODE=$(RENODE) python3 -u sim/scripts/menu_check.py $(MOD) --compare $(BASEROM)
+	RENODE=$(RENODE) python3 -u sim/scripts/menu_check.py $(MOD) --compare $(BASEROM) | grep -E 'PASS|FAIL|checks'
+	RENODE=$(RENODE) python3 -u sim/scripts/thru_check.py $(MOD) --stock $(BASEROM) | grep -E 'PASS|FAIL|checks'
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

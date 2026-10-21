@@ -344,3 +344,39 @@ first time. The THRU itself is still to be written.
 Lesson about the tooling: `make export` writes Ghidra's names back to
 `symbols.csv` and would undo names changed directly in the CSV; after such
 changes, rebuild the Ghidra project instead.
+
+**MIDI THRU, the real thing (same day, afternoon).** Following the DIN IN
+bytes through the code: the receive interrupt fills a 128-byte ring, and a
+main-loop task parses the bytes into USB-MIDI packets. Then the surprise: the
+packets go to the **same queue as the keyboard's events for the computer**.
+And the function that sends that queue over USB also copies each event to
+DIN OUT, but only when the USB send *fails*. So the stock routing is:
+
+- with a computer, keyboard → USB, DIN IN → USB, computer port "MIDI 2" →
+  DIN OUT (a USB ↔ DIN interface);
+- without a computer, keyboard → DIN OUT, and DIN IN → only local handling
+  (CV output and transport LEDs). DIN IN never reaches DIN OUT.
+
+The real unit agrees: plugged into a computer it bridges USB and DIN; on a
+power bank it does not. Found on the way: notes `0x73`–`0x77` sent to the unit
+light the transport LEDs, a first bit of "LED feedback" already in the stock
+firmware.
+
+Two things to watch in the stock code: the DIN OUT queue function has **no
+overflow check**, and the parser's return value was ambiguous in Ghidra
+(`undefined8`); the disassembly showed a byte in `r0`, 1 when a message is
+complete.
+
+THRU: replaced the DIN IN task with a C version that does the same and, with
+THRU on, queues each **complete** message for DIN OUT (after checking the free
+space). A new script feeds bytes into the simulated DIN IN and reads DIN OUT.
+First run: everything came out except the SysEx, of which only `F7` arrived.
+The cause was not the firmware but **our simulator's MIDI monitor**: it took
+the closing `F7` (a byte ≥ `0x80`) as a new status byte and threw away the
+`F0 7E 7F 06 01` before it. Fixed the monitor: all six checks pass (stock never
+forwards; THRU off forwards nothing; THRU on forwards notes with running
+status, clock, CC, program change and SysEx in order; messages stay whole
+while a key is played; still on after a reset).
+
+Tooling: `make decompile-all` writes every function to `build/decompiled.c`,
+which made searching for the ring's readers and writers a matter of `grep`.
