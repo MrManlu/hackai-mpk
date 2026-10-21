@@ -1,7 +1,8 @@
 # Research log
 
 Chronological log of the reverse-engineering work, including the dead ends,
-which are useful too. Newest entries go at the bottom.
+which are useful too. Newest entries go at the bottom. Sections are ordered by
+start date; work that overlapped in time is grouped by topic.
 
 ## April 2025: Identifying the MCU
 
@@ -96,7 +97,7 @@ The bootloader and the application each have their own version. The
 application one takes an extra argument, probably pixel polarity.
 Details in [display.md](display.md).
 
-## October 2026: Image layout and toolchain
+## 7 October 2026: Image layout and toolchain
 
 While writing these docs, a re-check of the image showed:
 
@@ -119,7 +120,7 @@ While writing these docs, a re-check of the image showed:
 - The Ghidra project is now built from `config/` by `make ghidra`, seeded with
   the 94 names from the 2025 project.
 
-## October 2026: Simulator (Renode)
+## 8–16 October 2026: Simulator (Renode)
 
 Built a Renode model of the board that runs the stock firmware unmodified
 ([simulator.md](simulator.md)). Each blocker taught something about the
@@ -162,7 +163,7 @@ later hung in `seq_free_client`. Switched to **JACK through PipeWire**
 (`JACK-Client` under `pw-jack`; python-rtmidi was dropped because its wheel
 bundles its own libjack). Lesson: never SIGKILL ALSA MIDI processes.
 
-## October 2026: Bootloader and the updater
+## 15–21 October 2026: Bootloader and the updater
 
 Mapped the bootloader: boot decision (marker bytes, then SHIFT + PROG SELECT)
 and the USB HID update protocol, "UO"/"UI" packets C1–C4
@@ -193,7 +194,7 @@ Flash in the simulator:
 - Real unit (2026-10-21): `C4` probe in both modes, then a stock round-trip
   flash, 14 976 packets in 31 s (2 ms per packet, the 1 ms USB poll each way).
 
-## October 2026: Screensaver mod
+## 21 October 2026: Screensaver mod
 
 - *(Dead end)* The "Akai Professional" string at `0x0802502C` is only the USB
   manufacturer string (converted to UTF-16 for the descriptor).
@@ -213,7 +214,7 @@ Flash in the simulator:
   script must wait for state 2.
 - Same-size data patch, no code. Confirmed on the real unit (2026-10-21).
 
-## October 2026: Menus, programs and the first code patch
+## 21 October 2026: Menus, programs and the first code patch
 
 - The Global menu (SHIFT + STOP) has **no menu table**: six entries
   hard-coded in if-chains in a draw function and an encoder function, with
