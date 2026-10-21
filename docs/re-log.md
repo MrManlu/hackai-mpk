@@ -455,3 +455,9 @@ sequencer) paint fixed colours and are left alone.
 Simulator check, reading the LED outputs of the shift registers: all ten
 checks passed on the first run, and the full suite (menu, THRU, pad
 channels, feedback) is now 28 checks.
+
+On the real unit (flashing erased our settings, so pad 1 was back on Glob,
+channel 10): from the computer, `amidi -S "99 24 7F"` turned pad 1 blue;
+hitting it kept it blue; `89 24 00` brought red back. `99 2C 7F` (pad B1)
+left bank A untouched, and after BANK A/B the first pad showed blue. Exactly
+as in the simulator. Pad LED feedback: done.

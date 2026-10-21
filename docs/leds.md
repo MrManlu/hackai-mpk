@@ -124,6 +124,11 @@ lights pad 1 blue and another channel does nothing; hitting the lit pad keeps
 it blue; note off brings back red; a note for B1 leaves bank A alone and shows
 after BANK A/B; unlit pads still light when hit.
 
+**Confirmed on a real unit (2026-10-21)**, with notes sent from the computer
+over USB (`amidi -S`, raw MIDI): `99 24 7F` turned pad 1 blue, hitting it kept
+it blue, `89 24 00` brought it back to red; `99 2C 7F` (B1) left bank A red
+and showed B1 blue after BANK A/B.
+
 ## In the simulator
 
 `sim/peripherals/ShiftRegisterLeds.cs` shifts the SPI bytes, latches them on
