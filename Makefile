@@ -38,6 +38,7 @@ help:
 	@echo "make screensaver PNG=…   build/mods/screensaver.bin: stock firmware with PNG as screensaver"
 	@echo "make screensaver-sim     show the screensaver of build/mods/screensaver.bin in the simulator"
 	@echo "make mod                 build/mods/hackai.bin: stock firmware + our code (firmware/)"
+	@echo "make mod BASE=build/mods/screensaver.bin   same, on top of another image (screensaver)"
 	@echo "make mod-sim             check the mod in the simulator (Global menu, THRU setting)"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
@@ -135,10 +136,11 @@ screensaver-sim: $(SVD_RENODE)
 	RENODE=$(RENODE) python3 -u sim/scripts/screensaver_check.py $(SCREENSAVER)
 
 MOD := build/mods/hackai.bin
+BASE ?= $(BASEROM)
 
 mod:
 	python3 tools/baserom.py --check
-	python3 tools/build_mod.py --out $(MOD)
+	python3 tools/build_mod.py --firmware $(BASE) --out $(MOD)
 
 mod-sim: mod $(SVD_RENODE)
 	RENODE=$(RENODE) python3 -u sim/scripts/menu_check.py $(MOD) --compare $(BASEROM)

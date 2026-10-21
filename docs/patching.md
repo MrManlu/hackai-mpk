@@ -11,6 +11,9 @@ make mod-sim    # check it in the simulator
 make flash IMAGE=build/mods/hackai.bin   # unit in update mode
 ```
 
+To combine with the screensaver mod, build our code on top of that image:
+`make screensaver PNG=…` then `make mod BASE=build/mods/screensaver.bin`.
+
 ## Layout
 
 | Where | What |
