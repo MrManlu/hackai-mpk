@@ -420,3 +420,12 @@ messages per pad that the test did not expect. They were **poly aftertouch**
 (the MPC program has PadAT = Poly, so a held pad sends pressure), and they
 also went out on each pad's own channel. Notes: `92` on, `99` on, `82` off,
 `89` off, as hoped. The test now checks notes and aftertouch separately.
+
+On the real unit, flashed with screensaver + THRU + pad channels (31 s): pad 1
+set to Chan 3 from the new menu entry. To watch the MIDI from the computer we
+used `amidi -d` on the raw MIDI port (not the ALSA sequencer that deadlocked
+on 15 October). First attempt showed nothing: its output went through a pipe,
+was buffered, and was lost when `timeout` stopped it. With `stdbuf -oL` into
+a file: 364 messages in 40 seconds, pad 1 on channel 3, the others on 10,
+overlapping pads, every note off on its note on's channel, no hanging notes,
+aftertouch per pad too. Per-pad MIDI channel: done.

@@ -68,3 +68,10 @@ in overlapping order (pad 1 down, pad 2 down, pad 1 up, pad 2 up), each note
 off and each pad's poly aftertouch go out on that pad's channel; editing the
 note through the wrapped stock encoder still works; the channel survives a
 reset.
+
+**Confirmed on a real unit (2026-10-21)**, over USB: with pad 1 on Chan 3 and
+the others on Glob (channel 10), 40 s of playing with overlapping pads gave
+364 messages: pad 1 always on channel 3, the others on 10, every note off on
+the channel of its note on, no hanging notes, and each pad's aftertouch on its
+channel. Read on the computer with `amidi -d` (raw MIDI, not the ALSA
+sequencer), unbuffered (`stdbuf -oL`).
