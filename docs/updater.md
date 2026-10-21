@@ -92,8 +92,10 @@ shows "Upgrade" and the version.
 Recommended first steps on hardware:
 
 1. `info --hid` in update mode: must print `1.13`. Harmless.
+   **Confirmed** on a real unit (2026-10-21).
 2. `info --hid` with the unit running normally: must say that the application
-   is running (the `E4` reply). Harmless.
+   is running (the `E4` reply). Harmless. **Confirmed** on a real unit
+   (2026-10-21).
 3. `flash baserom/firmware.bin --hid`: reflash stock as a round trip.
 
 If anything goes wrong during an update, the bootloader is untouched: enter
