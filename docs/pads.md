@@ -63,5 +63,8 @@ The pad edit menu gets an 8th entry, **`Chan`**: `Glob` (the program's
 Checked in the simulator (`sim/scripts/pad_check.py`, part of `make
 mod-sim`): pad 1 starts on channel 10 (MPC program); the pad menu's stock
 entries look exactly like the stock ones; with Chan 3, pad 1 sends note on and
-note off on channel 3 while pad 2 stays on 10; editing the note through the
-wrapped stock encoder still works; the channel survives a reset.
+note off on channel 3 while pad 2 stays on 10; with both held and released
+in overlapping order (pad 1 down, pad 2 down, pad 1 up, pad 2 up), each note
+off and each pad's poly aftertouch go out on that pad's channel; editing the
+note through the wrapped stock encoder still works; the channel survives a
+reset.

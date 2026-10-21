@@ -12,6 +12,9 @@ OUT (the simulator has no USB host, so the unit sends there). Checks that:
 - after setting Chan to 3, pad 1 plays on channel 3 (note on and note off)
   and pad 2 stays on channel 10;
 - a stock entry still works through the wrapped encoder (note 36 -> 37);
+- overlapping pads on different channels: pad 1 down, pad 2 down, pad 1 up,
+  pad 2 up gives each note off on the channel of its own note on, and the
+  aftertouch of each pad on its channel;
 - the channel survives a reset.
 
 Exit status 0 if every check passed.
@@ -35,6 +38,12 @@ def hit(sim, pad, hold=0.2):
     sim.run("; ".join(f"adc1 SetInput {c} {m} 3500" for c, m in PADS[pad]))
     sim.run(f'emulation RunFor "{hold}"')
     sim.run("; ".join(f"adc1 SetInput {c} {m} 0" for c, m in PADS[pad]))
+    sim.run('emulation RunFor "0.2"')
+
+
+def press_pad(sim, pad, down):
+    value = 3500 if down else 0
+    sim.run("; ".join(f"adc1 SetInput {c} {m} {value}" for c, m in PADS[pad]))
     sim.run('emulation RunFor "0.2"')
 
 
@@ -132,6 +141,25 @@ def main():
         print("pad 2:", out)
         check("pad 2 stays on channel 10",
               len(out) == 2 and all(channel(m) == 9 for m in out), failures)
+
+        # Overlapping pads on different channels.
+        sim.run("midiOut Clear")
+        press_pad(sim, 1, True)
+        press_pad(sim, 2, True)
+        press_pad(sim, 1, False)
+        press_pad(sim, 2, False)
+        out = messages(sim)
+        print("pad 1 down, pad 2 down, pad 1 up, pad 2 up:", out)
+        # Both pads play note 37 here (pad 1 edited above, pad 2 by default);
+        # the channel tells them apart. Held pads also send poly aftertouch
+        # (PadAT is Poly in the MPC program).
+        kinds = [(int(m.split()[0], 16) >> 4, channel(m)) for m in out]
+        notes = [k for k in kinds if k[0] in (8, 9)]
+        touch = [k for k in kinds if k[0] == 0xA]
+        check("overlapping pads: each note off on its note on's channel",
+              notes == [(9, 2), (9, 9), (8, 2), (8, 9)], failures)
+        check("overlapping pads: aftertouch on each pad's channel",
+              len(touch) > 0 and {c for _, c in touch} == {2, 9}, failures)
 
         record = sim.read(0x0802D800, 64)
         print("settings sector:", record.hex(" "))

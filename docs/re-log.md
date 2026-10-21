@@ -412,3 +412,11 @@ In the simulator: hit pad 1 → `99 24 6A` (channel 10); set Chan 3 → `92 25
 before; channel kept after a reset. One difference noticed along the way: the
 note edited from the menu went back to 36 after the reset (stock settings
 need SAVE), while our channel stayed: ours is saved at once and global.
+
+Question from the user: pad 1 down, pad 2 down, pad 1 up: does each note off
+go out on the right channel? It should, since each pad keeps its channel in
+its own state record, but we tested it. The first run "failed": two extra
+messages per pad that the test did not expect. They were **poly aftertouch**
+(the MPC program has PadAT = Poly, so a held pad sends pressure), and they
+also went out on each pad's own channel. Notes: `92` on, `99` on, `82` off,
+`89` off, as hoped. The test now checks notes and aftertouch separately.
