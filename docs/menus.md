@@ -57,9 +57,8 @@ entry needs code patches:
 
 Two options:
 
-- **In the program** (an unused byte of the 0x14B-byte program): saved with
-  the program by the stock SAVE, but per program, and we must first prove the
-  byte is really unused.
+- **In the program**: ruled out, there are no unused bytes
+  ([programs.md](programs.md#free-bytes)).
 - **Our own settings sector** in the free area (e.g. the last 2 KB sector,
   `0x0802D800`–`0x0802DFFF`), with our own format and version: global for real,
   independent of AKAI's formats. Erased by a firmware update (`C1` erases up to
