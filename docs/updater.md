@@ -97,6 +97,10 @@ Recommended first steps on hardware:
    is running (the `E4` reply). Harmless. **Confirmed** on a real unit
    (2026-10-21).
 3. `flash baserom/firmware.bin --hid`: reflash stock as a round trip.
+   **Confirmed** on a real unit (2026-10-21): 14 976 packets at ~500
+   packets/s (2 ms per round trip, the 1 ms USB polling interval each way),
+   31 s in total; the unit reset by itself into the application (C4 answers
+   `E4`, MIDI ports back).
 
 If anything goes wrong during an update, the bootloader is untouched: enter
 update mode again and reflash.
