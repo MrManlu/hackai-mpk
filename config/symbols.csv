@@ -50,7 +50,9 @@ address,kind,name,type,status,notes
 0x08017D98,func,screensaver_update_APP,,understood,"UI idle state machine (state at 0x20004DA6): 1 temporary screen (boot or message, timeout in 0x20000000), 2 normal, 3 screensaver. After 15000001 ticks of 20 us (5 min) without activity draws bitmap_akai_logo_APP, then swaps normal/inverted every 250001 ticks (5 s)."
 0x080180E0,func,button_PROGSELECT_onClick,,named,
 0x0801833A,func,print_program_save_and_other_things,,named,
+0x080183F8,func,global_menu_draw_APP,,understood,"Draws the Global menu (SHIFT+STOP, screen 0x16): 6 entries in an if-chain (0 Trans, 1 MIDI, 2 PadCH, 3 PadAT, 4 Taps, 5 Tprt), two rows at a time; values from the current program at 0x20000668 + 0x10..0x1C."
 0x080186E8,func,button_SHIFT_PROGSELECT_onClick,,named,
+0x08018C3C,func,pad_edit_menu_draw_APP,,understood,"Draws the pad/control edit menu (screen 0x19): 7 entries, same if-chain pattern as the Global menu."
 0x080190B8,label,Pad_struct,,named,
 0x0801A964,func,flush_bidimensional_matrix_POSSIBLE,,named,
 0x0801AB0C,label,bidimensional_matrix,,named,
@@ -64,6 +66,8 @@ address,kind,name,type,status,notes
 0x0801C12E,func,dma_data_number_set_POSSIBLE,,named,
 0x0801C260,func,spi_i2s_data_transmit,,named,
 0x0801C264,func,spi_i2s_flag_get,,named,
+0x0801DF48,func,encoder_dispatch_APP,,understood,"Encoder handler: calls the per-screen encoder function by screen id (0x20004DA8), e.g. 0x16 -> global_menu_encoder_APP."
+0x0801F3A8,func,global_menu_encoder_APP,,understood,"Encoder in the Global menu: select mode moves the cursor (0x20004DAF) between 0 and 5 (hard-coded); edit mode (0x20004DAE = 1) changes the value of the entry, with per-entry limits. Redraws with global_menu_draw_APP."
 0x0801F534,func,spi_transmit_AKAI,,named,
 0x0801F584,func,SPI2_device_seems_LCD_init_mirror01f584,,named,
 0x0801F9C6,func,flush_buffer_512_seems_DMA1_address_Ch5,,named,
