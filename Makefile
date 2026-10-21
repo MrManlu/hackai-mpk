@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile decompile-all sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim mod mod-sim clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile decompile-all sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim mod mod-sim cpu-load clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -41,6 +41,7 @@ help:
 	@echo "make mod                 build/mods/hackai.bin: stock firmware + our code (firmware/)"
 	@echo "make mod BASE=build/mods/screensaver.bin   same, on top of another image (screensaver)"
 	@echo "make mod-sim             check the mod in the simulator (Global menu, MIDI THRU, pad channels, LED feedback)"
+	@echo "make cpu-load            share of the CPU used by our code, measured in the simulator"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -152,6 +153,9 @@ mod-sim: mod $(SVD_RENODE)
 	RENODE=$(RENODE) python3 -u sim/scripts/thru_check.py $(MOD) --stock $(BASEROM) | grep -E 'PASS|FAIL|checks'
 	RENODE=$(RENODE) python3 -u sim/scripts/pad_check.py $(MOD) --compare $(BASEROM) | grep -E 'PASS|FAIL|checks'
 	RENODE=$(RENODE) python3 -u sim/scripts/feedback_check.py $(MOD) --stock $(BASEROM) | grep -E 'PASS|FAIL|checks'
+
+cpu-load: mod $(SVD_RENODE)
+	RENODE=$(RENODE) python3 -u sim/scripts/cpu_load.py $(MOD) --stock $(BASEROM)
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

@@ -486,3 +486,26 @@ now noted in simulator.md.
 
 The real cost to keep in mind is not CPU but flash writes: the CPU stalls
 while a sector is erased (every 64 settings changes), as with the stock SAVE.
+
+A correction before publishing the numbers. Reviewing the method: the
+profiler books instructions to the function that was *called*, but our
+replace and wrap hooks are entered by a jump from the stock function's entry.
+So our DIN IN task (parser, THRU) and the wrappers were booked to AKAI's
+functions, and the 0.115 % was too low. The fix: run the same load on the
+stock image too and compare the instructions spent under every hooked
+function. Stock: 372,706; hackai: 731,181; difference **0.125 %** of the CPU.
+Turned into a tool, `make cpu-load`, with the disk lessons built in (ten
+windows of 0.1 s, each file deleted after use, stop below 400 MB free). Two
+runs gave identical numbers: the simulation is deterministic. Write-up in
+performance.md.
+
+**README photo.** The project page now opens with a real photo of the unit
+showing the custom screensaver: the inverted frame, where the text reads best,
+cropped around the display. The phone photos carried GPS coordinates in their
+EXIF data; the published image is rebuilt from the pixels only, with no
+metadata.
+
+**End of the day.** On the real unit: our own USB updater, the custom
+screensaver, our own entries in the Global menu, a MIDI channel per pad and
+pad LED feedback from MIDI. MIDI THRU works in the simulator and waits for
+an external MIDI device to be tested on hardware.

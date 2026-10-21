@@ -1,12 +1,17 @@
 # hackai-mpk
 
+![An AKAI MPK Mini Plus running hackai-mpk, showing its custom screensaver](docs/img/screensaver-real.jpg)
+
+*A real MPK Mini Plus running hackai-mpk: custom screensaver, flashed over USB
+with our own updater.*
+
 Community firmware and hardware mods for AKAI MPK mini controllers, starting
 with the **AKAI MPK Mini Plus**.
 
 The goal is to extend what the controller can do without losing what it
-already does well: proper MIDI THRU, pad LEDs driven over MIDI, more
-arpeggiator modes and, as an optional hardware mod, an internal battery with a
-charge indicator on the display.
+already does well: proper MIDI THRU, a MIDI channel per pad, pad LEDs driven
+over MIDI, more arpeggiator modes and, as an optional hardware mod, an
+internal battery with a charge indicator on the display.
 
 ![The stock MPK Mini Plus firmware running in the hackai-mpk simulator](docs/img/simulator.png)
 
@@ -54,6 +59,10 @@ Early stage. The table shows the plan, not finished features.
 | Internal battery + on-screen indicator | Hardware + firmware | ⚪ Planned |
 
 Legend: ✅ done · 🟡 in progress · ⚪ planned
+
+The mods cost about **0.13 % of the CPU** under a heavy MIDI load, measured
+in the simulator against the stock firmware: see
+[docs/performance.md](docs/performance.md).
 
 ---
 
