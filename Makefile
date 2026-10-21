@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -35,6 +35,8 @@ help:
 	@echo "make flash-check IMAGE=… safety checks on a firmware image"
 	@echo "make flash-sim IMAGE=…   flash an image into the simulator over the update protocol, verify it"
 	@echo "make flash IMAGE=…       flash a real unit in update mode (SHIFT + PROG SELECT at power-up)"
+	@echo "make screensaver PNG=…   build/mods/screensaver.bin: stock firmware with PNG as screensaver"
+	@echo "make screensaver-sim     show the screensaver of build/mods/screensaver.bin in the simulator"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -118,6 +120,17 @@ flash-sim: $(SVD_RENODE)
 flash:
 	@test -n "$(IMAGE)" || { echo "usage: make flash IMAGE=<file>"; exit 1; }
 	python3 tools/mpkflash.py flash "$(IMAGE)" --hid
+
+SCREENSAVER := build/mods/screensaver.bin
+
+screensaver:
+	@test -n "$(PNG)" || { echo "usage: make screensaver PNG=<image> [OPTS=--dither]"; exit 1; }
+	python3 tools/baserom.py --check
+	python3 tools/screensaver.py patch "$(PNG)" $(SCREENSAVER) $(OPTS)
+
+screensaver-sim: $(SVD_RENODE)
+	@test -f $(SCREENSAVER) || { echo "run make screensaver PNG=<image> first"; exit 1; }
+	RENODE=$(RENODE) python3 -u sim/scripts/screensaver_check.py $(SCREENSAVER)
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

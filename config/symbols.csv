@@ -47,6 +47,7 @@ address,kind,name,type,status,notes
 0x08015878,label,something_if_is_not_1_then_clear_screen,,named,
 0x08015880,label,number_of_PGM,,named,
 0x08016698,func,arp_setup,,named,
+0x08017D98,func,screensaver_update_APP,,understood,"UI idle state machine (state at 0x20004DA6): 1 temporary screen (boot or message, timeout in 0x20000000), 2 normal, 3 screensaver. After 15000001 ticks of 20 us (5 min) without activity draws bitmap_akai_logo_APP, then swaps normal/inverted every 250001 ticks (5 s)."
 0x080180E0,func,button_PROGSELECT_onClick,,named,
 0x0801833A,func,print_program_save_and_other_things,,named,
 0x080186E8,func,button_SHIFT_PROGSELECT_onClick,,named,
@@ -68,6 +69,8 @@ address,kind,name,type,status,notes
 0x0801F9C6,func,flush_buffer_512_seems_DMA1_address_Ch5,,named,
 0x0801FA68,func,print_LCD_char_POSSIBLE_APP,,named,
 0x0801FB4A,func,print_LCD_APP,,named,
+0x0801FD2E,func,draw_bitmap_APP,,understood,"draw_bitmap(x, y, bitmap, invert): bitmap = [width, height] then ceil(height/8) bytes per column, LSB = top; into the column-major framebuffer (4 bytes per column)."
+0x0801FE1A,func,display_test_APP,,understood,"Endless loop: logo inverted, logo, all off, all on. Factory display test (power-up key combination?)."
 0x0801FF20,label,buffer_512_seems_DMA1_address_Ch5,,named,
 0x0801FF5C,func,memncpy_POSSIBLE,,named,
 0x08020004,func,strcpy,,named,
@@ -86,6 +89,7 @@ address,kind,name,type,status,notes
 0x08021204,label,BOOTLOADER_END_LAST_REGION,,named,
 0x080243B4,func,main,,named,
 0x08024628,func,hid_process_packet_APP,,understood,"Application HID handler: answers a 'UO' C4 packet with 'UI' E4 and ignores everything else (tells update tools the bootloader is not running)."
+0x080248CC,label,bitmap_akai_logo_APP,,understood,"Screensaver bitmap, 128x32: header 80 20, then 512 bytes, 4 per column. Replaced by tools/screensaver.py."
 0x08024E94,func,__iar_data_init3,,named,IAR runtime: runs the RAM initialisers from a table.
 0x08024F1C,func,__cmain,,named,"IAR runtime: __low_level_init, __iar_data_init3, main, exit."
 0x08024F3A,func,__low_level_init,,named,"IAR default weak version, returns 1."

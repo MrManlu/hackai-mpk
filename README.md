@@ -43,7 +43,8 @@ Early stage. The table shows the plan, not finished features.
 | Hardware and stock firmware documentation | Research | 🟡 In progress |
 | Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
 | Simulator (stock firmware in Renode, panel GUI) | Tooling | 🟡 Boots; OLED, LEDs and buttons work |
-| Safe flashing and recovery method | Foundation | ⚪ Planned |
+| Safe flashing over USB (`tools/mpkflash.py`) | Foundation | ✅ Done, tested on a real unit |
+| Custom screensaver image | Mod (data) | 🟡 Works in the simulator |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | Per-pad MIDI channel | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
@@ -174,6 +175,7 @@ hackai-mpk/
 ├── docs/          # Reverse-engineering notes, memory map, protocols
 ├── sim/           # Renode simulator: platform, board and peripheral models
 ├── tools/         # Scripts: firmware extraction, Ghidra build and export
+├── mods/          # Our own assets for mods (e.g. screensaver images)
 ├── firmware/      # Our own code: patches and new features (planned)
 ├── hardware/      # Battery mod schematics, PCB and BOM (planned)
 ├── Makefile
@@ -185,12 +187,18 @@ hackai-mpk/
 
 ## Installation
 
-> Not available yet. This section will cover:
+> Early days. What works today, from your own copy of the stock firmware
+> (`make baserom`, see [docs/firmware-image.md](docs/firmware-image.md)):
 >
-> 1. **Backing up** your own unit's firmware.
-> 2. Applying the patches or building the firmware.
-> 3. Flashing.
-> 4. **Recovering** the unit if something goes wrong (via the SWD header).
+> 1. Build a modded image, e.g. a custom screensaver:
+>    `make screensaver PNG=my_image.png` ([docs/screensaver.md](docs/screensaver.md)).
+> 2. Try it in the simulator: `make screensaver-sim`, or `make flash-sim IMAGE=…`.
+> 3. Flash it over USB with the unit in update mode (hold SHIFT + PROG SELECT
+>    while plugging it in): `make flash IMAGE=…` ([docs/updater.md](docs/updater.md)).
+>
+> The bootloader is never overwritten over USB, so a bad image can always be
+> fixed by flashing again from update mode. SWD recovery is still to be
+> documented.
 
 **This repository does not distribute AKAI's original firmware.** The tools
 will work on the copy each user extracts from the official updater or from
