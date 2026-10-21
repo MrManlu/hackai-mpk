@@ -59,6 +59,10 @@ firmware believes nobody touched a control for 5 minutes. It prints the screen
 at the screensaver and 5 s later (inverted). Waiting for real would take
 about 18 minutes, since the simulator runs about 4× slower than real time.
 
+**Confirmed on a real unit (2026-10-21):** flashed with `make flash`, the
+screensaver shows `mods/screensaver/hackai.png` after 5 minutes idle and swaps
+it between normal and inverted, like the stock logo.
+
 Validated in the simulator (2026-10-21): with `mods/screensaver/hackai.png`
 the screensaver shows the new image and inverts it after 5 s. The patched
 image passes the `mpkflash` checks, and the only bytes that differ from stock

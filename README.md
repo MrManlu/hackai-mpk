@@ -44,7 +44,7 @@ Early stage. The table shows the plan, not finished features.
 | Reproducible analysis pipeline (Ghidra from text) | Tooling | ✅ Done |
 | Simulator (stock firmware in Renode, panel GUI) | Tooling | 🟡 Boots; OLED, LEDs and buttons work |
 | Safe flashing over USB (`tools/mpkflash.py`) | Foundation | ✅ Done, tested on a real unit |
-| Custom screensaver image | Mod (data) | 🟡 Works in the simulator |
+| Custom screensaver image (`make screensaver`) | Mod (data) | ✅ Done, tested on a real unit |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | Per-pad MIDI channel | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
