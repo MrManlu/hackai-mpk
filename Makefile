@@ -14,7 +14,7 @@ SVD_SHA := $(shell sed -n 's/^sha256 = "\(.*\)"/\1/p' config/segments.toml)
 BASEROM := baserom/firmware.bin
 PROJECT := build/ghidra/hackai-mpk.gpr
 
-.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim clean distclean
+.PHONY: help setup setup-gui gui matrix-sweep analog-sweep baserom check ghidra rebuild export report decompile sim sim-debug sim-dump flash-check flash-sim flash screensaver screensaver-sim mod mod-sim clean distclean
 
 help:
 	@echo "make setup               create .venv with PyGhidra (from your Ghidra install)"
@@ -37,6 +37,8 @@ help:
 	@echo "make flash IMAGE=…       flash a real unit in update mode (SHIFT + PROG SELECT at power-up)"
 	@echo "make screensaver PNG=…   build/mods/screensaver.bin: stock firmware with PNG as screensaver"
 	@echo "make screensaver-sim     show the screensaver of build/mods/screensaver.bin in the simulator"
+	@echo "make mod                 build/mods/hackai.bin: stock firmware + our code (firmware/)"
+	@echo "make mod-sim             check the mod in the simulator (Global menu, THRU setting)"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -131,6 +133,15 @@ screensaver:
 screensaver-sim: $(SVD_RENODE)
 	@test -f $(SCREENSAVER) || { echo "run make screensaver PNG=<image> first"; exit 1; }
 	RENODE=$(RENODE) python3 -u sim/scripts/screensaver_check.py $(SCREENSAVER)
+
+MOD := build/mods/hackai.bin
+
+mod:
+	python3 tools/baserom.py --check
+	python3 tools/build_mod.py --out $(MOD)
+
+mod-sim: mod $(SVD_RENODE)
+	RENODE=$(RENODE) python3 -u sim/scripts/menu_check.py $(MOD) --compare $(BASEROM)
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

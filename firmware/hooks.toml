@@ -1,0 +1,13 @@
+# hackai-mpk: which stock functions are replaced by ours (tools/build_mod.py).
+#
+# Each [[replace]] overwrites the first 4 bytes of the stock function with a
+# B.W to our function, so every caller ends up in our code. Our function must
+# do the whole job of the stock one (same arguments and results).
+
+[[replace]]
+function = "global_menu_draw_APP"     # 0x080183F8
+with = "hk_global_menu_draw"          # firmware/src/global_menu.c
+
+[[replace]]
+function = "global_menu_encoder_APP"  # 0x0801F3A8
+with = "hk_global_menu_encoder"

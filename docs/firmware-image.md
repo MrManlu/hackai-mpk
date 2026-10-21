@@ -37,7 +37,7 @@ The file is exactly the size of the MCU flash and maps 1:1 onto
 | `0x00000` | `0x08000000` | 20 KB | **Bootloader** (vector table, flash routines, "Upgrade" screen) | confirmed |
 | `0x05000` | `0x08005000` | 20 KB | **Bootloader update payload** (identical copy in v1.13) | confirmed |
 | `0x0A000` | `0x0800A000` | ~111 KB | **Application** (code ends around `0x25D4C`) | confirmed |
-| `0x25D4C` | `0x08025D4C` | ~33 KB | Zero padding: **free space for patches** | confirmed |
+| `0x25D4C` | `0x08025D4C` | ~33 KB | Zero padding: **free space for patches**. hackai-mpk uses `0x08026000`–`0x0802D7FF` for code and `0x0802D800`–`0x0802DFFF` for its settings ([patching.md](patching.md)) | confirmed |
 | `0x2E000` | `0x0802E000` | 4 KB | Zero padding with the **application-present marker** at `0x0802E7FE`–`0x0802E7FF` | confirmed |
 | `0x2F000` | `0x0802F000` | 32 KB | **User programs**: zeros in the update image; the application formats them at first boot (16 sector erases, default programs such as "FLStudio20") | confirmed in the simulator |
 | `0x37000` | `0x08037000` | 9 × 4 KB | Blocks that each hold `0x14B` bytes of data | hypothesis: factory presets |

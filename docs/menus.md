@@ -63,3 +63,8 @@ Two options:
   `0x0802D800`–`0x0802DFFF`), with our own format and version: global for real,
   independent of AKAI's formats. Erased by a firmware update (`C1` erases up to
   `0x0803EFFF`), so settings fall back to defaults after reflashing.
+
+## Our entries
+
+Done in [patching.md](patching.md#first-mod-global-menu-entry-7-thru): the
+Global menu has a 7th entry, ` THRU: Off/On`, stored in our settings sector.

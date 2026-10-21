@@ -35,6 +35,7 @@ address,kind,name,type,status,notes
 0x08004184,func,SW_breakpoint_L1_BL,,named,
 0x0800A004,label,APP_ENTRYPOINT,,named,
 0x0800AA9C,label,var_equals_0_if_PA6_True_else_2,,named,
+0x0800DFBA,func,transpose_apply_POSSIBLE_APP,,named,"Called by the Global menu after changing the transpose."
 0x0800F81E,func,gpio_input_data_bit_read_POSSIBLE,,named,
 0x0800F840,func,gpio_output_data_bit_read,,named,
 0x0800F85C,func,gpio_bits_set,,named,
@@ -48,6 +49,7 @@ address,kind,name,type,status,notes
 0x08015880,label,number_of_PGM,,named,
 0x08016698,func,arp_setup,,named,
 0x08017D98,func,screensaver_update_APP,,understood,"UI idle state machine (state at 0x20004DA6): 1 temporary screen (boot or message, timeout in 0x20000000), 2 normal, 3 screensaver. After 15000001 ticks of 20 us (5 min) without activity draws bitmap_akai_logo_APP, then swaps normal/inverted every 250001 ticks (5 s)."
+0x080180B4,func,menu_title_rule_APP,,understood,"Draws the horizontal rule under a menu title (sets pixel row 2 of every column)."
 0x080180E0,func,button_PROGSELECT_onClick,,named,
 0x0801833A,func,print_program_save_and_other_things,,named,
 0x080183F8,func,global_menu_draw_APP,,understood,"Draws the Global menu (SHIFT+STOP, screen 0x16): 6 entries in an if-chain (0 Trans, 1 MIDI, 2 PadCH, 3 PadAT, 4 Taps, 5 Tprt), two rows at a time; values from the current program at 0x20000668 + 0x10..0x1C."
@@ -70,7 +72,7 @@ address,kind,name,type,status,notes
 0x0801F3A8,func,global_menu_encoder_APP,,understood,"Encoder in the Global menu: select mode moves the cursor (0x20004DAF) between 0 and 5 (hard-coded); edit mode (0x20004DAE = 1) changes the value of the entry, with per-entry limits. Redraws with global_menu_draw_APP."
 0x0801F534,func,spi_transmit_AKAI,,named,
 0x0801F584,func,SPI2_device_seems_LCD_init_mirror01f584,,named,
-0x0801F9C6,func,flush_buffer_512_seems_DMA1_address_Ch5,,named,
+0x0801F9C6,func,framebuffer_clear_APP,,understood,"Clears the 512-byte OLED framebuffer (0x20003BD0; column-major, 4 bytes per column)."
 0x0801FA68,func,print_LCD_char_POSSIBLE_APP,,named,
 0x0801FB4A,func,print_LCD_APP,,named,
 0x0801FD2E,func,draw_bitmap_APP,,understood,"draw_bitmap(x, y, bitmap, invert): bitmap = [width, height] then ceil(height/8) bytes per column, LSB = top; into the column-major framebuffer (4 bytes per column)."
@@ -81,8 +83,8 @@ address,kind,name,type,status,notes
 0x080200B4,func,SystemInit,,named,Called first by Reset_Handler (CMSIS startup).
 0x08020E48,func,flash_unlock,,named,
 0x08020E5A,func,flash_lock,,named,
-0x08020E68,func,flash_write_something,,named,
-0x08020FB8,func,flash_write_SOMETHING_to_addr,,named,
+0x08020E68,func,flash_sector_erase_APP,,understood,"Erases the 2 KB sector at the address; returns 4 when done."
+0x08020FB8,func,flash_word_program_APP,,understood,"Programs one 32-bit word (address, value); returns 4 when done."
 0x0802115E,func,flash_flag_clear,,named,
 0x08021166,func,flash_operation_status_get_BOOTLOADER,,named,
 0x08021190,func,flash_operation_wait_for_BOOTLOADER,,named,
