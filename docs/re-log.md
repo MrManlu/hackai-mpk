@@ -380,3 +380,35 @@ while a key is played; still on after a reset).
 
 Tooling: `make decompile-all` writes every function to `build/decompiled.c`,
 which made searching for the ring's readers and writers a matter of `grep`.
+
+**Per-pad MIDI channel (same day, evening).** Without the Digitakt at hand,
+the THRU hardware test had to wait, so we moved on to roadmap item 2. The
+stock pad edit menu (SHIFT + PROG SELECT, then hit a pad) already has seven
+settings per pad (note, CC, PC, two colours, mode, toggle), but no channel:
+every pad uses PadCH. Chose a per-pad entry in that menu, "8. Chan: Glob /
+1–16".
+
+Where the channel comes from: on a hit, one instruction at `0x08019F5C` loads
+PadCH and the next stores it in the pad's state record; note on, note off,
+CC, PC and aftertouch all use that copy. Good news: replacing that one load is
+enough, and the note off keeps the channel of its note on. Note repeat has
+the same load-and-store at `0x0801A564`; without patching it too, repeated
+notes would have jumped back to PadCH.
+
+The pad menu's encoder also updates the pad LED colours live, so instead of
+rewriting it, the patch system grew two new hook kinds:
+
+- **wrap**: our function runs first and can call the stock one through a
+  generated trampoline (the displaced instructions, then a jump back). The
+  build refuses instructions that depend on their address. First version of
+  that check missed `LDRH` with a literal; rewritten to catch any 32-bit load
+  based on PC.
+- **jump**: one instruction becomes a jump to a small assembly routine that
+  keeps every register, calls C, and jumps back. Before patching, the build
+  checks the exact bytes it replaces.
+
+In the simulator: hit pad 1 → `99 24 6A` (channel 10); set Chan 3 → `92 25
+6A` / `82 25 00`; pad 2 still on 10; the stock entries 1–7 look and work as
+before; channel kept after a reset. One difference noticed along the way: the
+note edited from the menu went back to 36 after the reset (stock settings
+need SAVE), while our channel stayed: ours is saved at once and global.

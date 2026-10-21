@@ -41,6 +41,13 @@ address,kind,name,type,status,notes
 0x0800F85C,func,gpio_bits_set,,named,
 0x0800F864,func,gpio_port_reset,,named,
 0x0800F86C,func,gpio_port_write,,named,
+0x080109DA,func,midi_note_on_APP,,understood,"Queues a note on (channel, note, velocity) as a USB-MIDI event (ring 0x200048B0)."
+0x08010A0E,func,midi_note_off_APP,,understood,"Queues a note off (channel, note, velocity)."
+0x08010A42,func,midi_cc_APP,,understood,"Queues a control change (channel, controller, value)."
+0x08010A76,func,midi_program_change_APP,,understood,"Queues a program change (channel, program)."
+0x08010AAC,func,midi_poly_aftertouch_APP,,understood,"Queues polyphonic aftertouch (channel, note, pressure)."
+0x08010AE0,func,midi_channel_aftertouch_APP,,understood,"Queues channel aftertouch (channel, pressure)."
+0x08010B16,func,midi_pitch_bend_APP,,understood,"Queues a pitch bend (channel, 14-bit value)."
 0x08010BA8,func,midi_service_APP,,understood,"MIDI task of the main loop: usb_midi_out_receive_APP, usb_midi_in_send_APP, din_tx_flush_APP, din_in_poll_APP, in that order."
 0x08010C2A,func,usb_midi_in_send_APP,,understood,"Sends the USB-MIDI event ring (0x200048B0, write 0x20004D86, read 0x20004D88) to the host (endpoint 0x83). When the send fails because USB is not configured (no host), copies each event to DIN OUT instead."
 0x08010D76,func,usb_midi_out_receive_APP,,understood,"Processes USB-MIDI packets from the host: cable 1 (port MIDI 2) goes to DIN OUT, cable 0 to SysEx or midi_message_handle_APP."
@@ -66,6 +73,8 @@ address,kind,name,type,status,notes
 0x080186E8,func,button_SHIFT_PROGSELECT_onClick,,named,
 0x08018C3C,func,pad_edit_menu_draw_APP,,understood,"Draws the pad/control edit menu (screen 0x19): 7 entries, same if-chain pattern as the Global menu."
 0x080190B8,label,Pad_struct,,named,
+0x08019A74,func,pad_event_APP,,understood,"Pad hit/release/pressure handling. On a hit (0x08019F5C) copies PadCH (program +0x10) into the pad state (0x200045D8 + bank*0x60 + pad*0xC, byte 1); note on/off, CC, PC and aftertouch then use that channel."
+0x0801A4C4,func,pad_note_repeat_APP,,understood,"Retriggers held pads (note repeat): with argument 1 sets every pad state channel to PadCH (0x0801A564) and sends note on; otherwise note off."
 0x0801A964,func,flush_bidimensional_matrix_POSSIBLE,,named,
 0x0801AB0C,label,bidimensional_matrix,,named,
 0x0801B76C,func,din_rx_count_APP,,understood,"Number of bytes in the DIN IN ring (128 bytes at 0x20004730, write 0x20004D74 by USART1_IRQHandler, read 0x20004D76)."
@@ -82,6 +91,7 @@ address,kind,name,type,status,notes
 0x0801C264,func,spi_i2s_flag_get,,named,
 0x0801C3F0,func,usb_ep_send_APP,,understood,"Starts a USB IN transfer (endpoint, data, length) if the device is configured (state 3 at 0x200011B8 + 0x112): returns 0, else 1."
 0x0801DF48,func,encoder_dispatch_APP,,understood,"Encoder handler: calls the per-screen encoder function by screen id (0x20004DA8), e.g. 0x16 -> global_menu_encoder_APP."
+0x0801E304,func,pad_edit_encoder_APP,,understood,"Encoder in the pad edit menu (screen 0x19, pad being edited at 0x20004E03): cursor 0-6; edit mode changes the pad record (colour entries also update the pad LED). Redraws with pad_edit_menu_draw_APP."
 0x0801F3A8,func,global_menu_encoder_APP,,understood,"Encoder in the Global menu: select mode moves the cursor (0x20004DAF) between 0 and 5 (hard-coded); edit mode (0x20004DAE = 1) changes the value of the entry, with per-entry limits. Redraws with global_menu_draw_APP."
 0x0801F534,func,spi_transmit_AKAI,,named,
 0x0801F584,func,SPI2_device_seems_LCD_init_mirror01f584,,named,

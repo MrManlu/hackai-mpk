@@ -39,6 +39,19 @@ void menu_title_rule_APP(void);
 
 void transpose_apply_POSSIBLE_APP(void);
 
+/* --- Pads (docs/pads.md) ------------------------------------------------- */
+
+#define SCREEN_PAD_EDIT 0x19
+#define PAD_EDITING (*(volatile uint8_t *)0x20004E03) /* pad shown in the pad edit menu */
+
+/* Per-pad state while playing: 12 bytes per pad, 8 pads per bank; byte 1 is
+ * the MIDI channel used by the pad's current note. */
+#define PAD_STATE      0x200045D8u
+#define PAD_STATE_BANK 0x60u
+#define PAD_STATE_SIZE 0x0Cu
+
+void pad_edit_menu_draw_APP(uint8_t pad);
+
 /* --- Current program (docs/programs.md) ----------------------------------- */
 
 #define PROGRAM ((volatile uint8_t *)0x20000668)
@@ -48,6 +61,11 @@ void transpose_apply_POSSIBLE_APP(void);
 #define PROG_TRANSPOSE     0x14  /* 0-24, 12 = none */
 #define PROG_TPRT          0x15  /* 0-1 */
 #define PROG_TAPS          0x1C  /* 2-4 */
+
+/* Pad records: 7 bytes per pad, bank A then B (docs/programs.md). */
+#define PROG_PADS          0x37
+#define PAD_RECORD(pad) (&PROGRAM[PROG_PADS + (pad) * 7])
+enum { PAD_NOTE, PAD_CC, PAD_PC, PAD_MODE, PAD_TOGGLE, PAD_ON_COLOUR, PAD_OFF_COLOUR };
 
 /* --- MIDI (docs/midi.md) -------------------------------------------------- */
 

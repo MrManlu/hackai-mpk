@@ -52,6 +52,9 @@ static void load(void)
 
     if (current.midi_thru > 1)
         current.midi_thru = 0;
+    for (uint32_t i = 0; i < sizeof(current.pad_channel); i++)
+        if (current.pad_channel[i] > 16)
+            current.pad_channel[i] = 0;
 }
 
 static void save(void)

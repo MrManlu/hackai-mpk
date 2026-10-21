@@ -20,7 +20,9 @@
 struct hk_settings {
     uint32_t magic;       /* HK_SETTINGS_MAGIC: record (and RAM copy) valid */
     uint8_t midi_thru;    /* 0 Off, 1 On */
-    uint8_t reserved[27]; /* future settings; 0 by default */
+    uint8_t pad_channel[16]; /* per pad (A1-A8, B1-B8): 0 = the program's
+                                PadCH (stock), 1-16 = that MIDI channel */
+    uint8_t reserved[11]; /* future settings; 0 by default */
 };
 
 /* The current settings (loaded from flash on first use). */
@@ -30,5 +32,10 @@ const struct hk_settings *hk_settings(void);
 void hk_settings_set(uint32_t offset, uint8_t value);
 
 #define HK_SETTING(field) ((uint32_t)__builtin_offsetof(struct hk_settings, field))
+
+/* --- Per-pad MIDI channel (pad_channel.c) --------------------------------- */
+
+/* The MIDI channel (0-15) of a pad (0-15), from our settings or PadCH. */
+uint8_t hk_pad_channel(uint8_t pad);
 
 #endif

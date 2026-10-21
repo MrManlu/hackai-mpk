@@ -1,8 +1,14 @@
-# hackai-mpk: which stock functions are replaced by ours (tools/build_mod.py).
+# hackai-mpk: where our code hooks into the stock firmware (tools/build_mod.py,
+# docs/patching.md).
 #
-# Each [[replace]] overwrites the first 4 bytes of the stock function with a
-# B.W to our function, so every caller ends up in our code. Our function must
-# do the whole job of the stock one (same arguments and results).
+# [[replace]]: the first 4 bytes of the stock function become a B.W to ours,
+#   so every caller ends up in our code. Ours does the whole job of the stock
+#   one (same arguments and results).
+# [[wrap]]: the same, but ours can still call the stock function as
+#   <function>_original (a generated trampoline).
+# [[jump]]: one 4-byte instruction (`expect`, as stored: little-endian bytes)
+#   becomes a B.W to our code, which returns to the next stock instruction
+#   by itself.
 
 [[replace]]
 function = "global_menu_draw_APP"     # 0x080183F8
@@ -15,3 +21,23 @@ with = "hk_global_menu_encoder"
 [[replace]]
 function = "din_in_poll_APP"          # 0x0801240E
 with = "hk_din_in_poll"               # firmware/src/midi_thru.c
+
+# Per-pad MIDI channel (firmware/src/pad_menu.c, pad_channel.c).
+
+[[replace]]
+function = "pad_edit_menu_draw_APP"   # 0x08018C3C
+with = "hk_pad_edit_menu_draw"
+
+[[wrap]]
+function = "pad_edit_encoder_APP"     # 0x0801E304
+with = "hk_pad_edit_encoder"
+
+[[jump]]
+at = "0x08019F5C"                     # pad hit: ldrb.w r0, [r9, #16] (PadCH)
+expect = "99 f8 10 00"
+to = "hk_pad_hit_channel"             # firmware/src/pad_channel_hooks.S
+
+[[jump]]
+at = "0x0801A564"                     # note repeat: ldrb.w r0, [sp, #4] (PadCH)
+expect = "9d f8 04 00"
+to = "hk_pad_repeat_channel"

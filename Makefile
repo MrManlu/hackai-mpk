@@ -40,7 +40,7 @@ help:
 	@echo "make screensaver-sim     show the screensaver of build/mods/screensaver.bin in the simulator"
 	@echo "make mod                 build/mods/hackai.bin: stock firmware + our code (firmware/)"
 	@echo "make mod BASE=build/mods/screensaver.bin   same, on top of another image (screensaver)"
-	@echo "make mod-sim             check the mod in the simulator (Global menu, MIDI THRU)"
+	@echo "make mod-sim             check the mod in the simulator (Global menu, MIDI THRU, pad channels)"
 	@echo "make rebuild             export, then rebuild the Ghidra project from scratch"
 	@echo "make clean               delete the Ghidra project (export first!)"
 	@echo "make distclean           delete build/ and .venv/"
@@ -150,6 +150,7 @@ mod:
 mod-sim: mod $(SVD_RENODE)
 	RENODE=$(RENODE) python3 -u sim/scripts/menu_check.py $(MOD) --compare $(BASEROM) | grep -E 'PASS|FAIL|checks'
 	RENODE=$(RENODE) python3 -u sim/scripts/thru_check.py $(MOD) --stock $(BASEROM) | grep -E 'PASS|FAIL|checks'
+	RENODE=$(RENODE) python3 -u sim/scripts/pad_check.py $(MOD) --compare $(BASEROM) | grep -E 'PASS|FAIL|checks'
 
 rebuild: export | $(PYTHON) $(SVD)
 	python3 tools/baserom.py --check

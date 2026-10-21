@@ -55,22 +55,44 @@ arguments and return values match.
 
 ### Hooks
 
+Three kinds, in `firmware/hooks.toml`:
+
 ```toml
-[[replace]]
+[[replace]]                           # our function instead of the stock one
 function = "global_menu_draw_APP"     # stock, from config/symbols.csv
 with = "hk_global_menu_draw"          # ours, from firmware/src
+
+[[wrap]]                              # ours first; it can still call the stock one
+function = "pad_edit_encoder_APP"
+with = "hk_pad_edit_encoder"          # calls pad_edit_encoder_APP_original()
+
+[[jump]]                              # one instruction anywhere
+at = "0x08019F5C"
+expect = "99 f8 10 00"                # the bytes it must replace
+to = "hk_pad_hit_channel"             # returns to 0x08019F60 by itself
 ```
 
-The first 4 bytes of the stock function become a Thumb-2 `B.W` to ours (range
-±16 MB, plenty). The rest of the stock function stays in place, unreachable.
-Our function must do the whole job of the stock one: we only replace
-functions we fully understand, and check the result against the stock
-firmware in the simulator.
+- **replace**: the first 4 bytes of the stock function become a Thumb-2
+  `B.W` to ours (range ±16 MB, plenty). The rest of the stock function stays
+  in place, unreachable. Our function does the whole job of the stock one: we
+  only replace functions we fully understand, and check the result against
+  the stock firmware in the simulator.
+- **wrap**: the same `B.W`, plus a generated trampoline
+  (`build/mods/trampolines.S`), `<function>_original`: the stock
+  instructions displaced by the `B.W`, then a jump back into the stock
+  function. `build_mod.py` refuses to move an instruction that depends on its
+  address (literal loads, branches, `ADR`, `CBZ`, `IT`…).
+- **jump**: replaces one 4-byte instruction (or two 2-byte ones) with a `B.W`
+  to an assembly routine of ours, which must do what the instruction did,
+  keep every other register and the stack as they were, and return with
+  `ldr.w pc, =<next instruction | 1>`. `expect` makes the build fail if the
+  bytes are not the expected instruction.
 
 ## Settings (`firmware/src/settings.c`)
 
 Our settings are a 32-byte record (`struct hk_settings`): magic `HKM1`, then
-one byte per setting (`midi_thru` first), the rest reserved (0).
+`midi_thru`, `pad_channel[16]`, and 11 reserved bytes (0). New settings take
+reserved bytes, so old records stay valid (0 = default).
 
 The settings sector is a log of records. Saving writes the next free record
 (all `0xFF`), the magic word last; the sector is erased only when all 64
