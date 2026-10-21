@@ -461,3 +461,28 @@ channel 10): from the computer, `amidi -S "99 24 7F"` turned pad 1 blue;
 hitting it kept it blue; `89 24 00` brought red back. `99 2C 7F` (pad B1)
 left bank A untouched, and after BANK A/B the first pad showed blue. Exactly
 as in the simulator. Pad LED feedback: done.
+
+**How much CPU do the mods take? (same day, late night)** Renode can count
+the instructions executed per call stack ("collapsed stack" profiler). First
+run: 1 s of DIN IN at the full MIDI rate produced profile files of ~450 MB
+and ~310 MB and **filled the disk** (which was already nearly full). Deleted
+them at once. Second try: write the profile into a named pipe and add it up
+on the fly: Renode hung when enabling the profiler on a FIFO. Third try,
+which worked: ten windows of 0.1 s, each file parsed and deleted before the
+next, with a guard that stops if free space drops below 400 MB.
+
+Result: **0.115 %** of the instructions were ours, almost all in the pad
+feedback (about 650 instructions per received note, to check the 16 pads).
+The core runs at **144 MHz** (from the SysTick reload: 2880 cycles per 20 µs
+tick), and the simulator at 100 M instructions per virtual second, so the
+real share is about the same or lower.
+
+A red herring on the way: only 358 of ~750 messages came out of DIN OUT, yet
+THRU had dropped nothing. With 30 CCs as a probe, the last ones came out with
+the *next* burst: delayed, not lost. The stock firmware showed the same (79
+of 90 bytes delivered by the receive interrupt, the rest later): Renode's
+USART model holds bytes that arrive back to back. A simulator limitation,
+now noted in simulator.md.
+
+The real cost to keep in mind is not CPU but flash writes: the CPU stalls
+while a sector is erased (every 64 settings changes), as with the stock SAVE.

@@ -124,3 +124,22 @@ writes whole programs ([programs.md](programs.md#free-bytes)).
 **Confirmed on a real unit (2026-10-21)**, combined with the screensaver mod:
 entry 7 appears, switches on with the encoder, stays on after unplugging the
 unit, and entries 1–6 behave as before.
+
+## CPU cost
+
+Measured in the simulator with Renode's profiler (instructions per call
+stack), DIN IN fed at the full MIDI rate for ~1 s (note on/off pairs, a
+quarter of them for pad 1, plus CCs), THRU on, a pad hit: **0.115 % of the
+executed instructions were ours**, nearly all in `hk_pad_feedback` (about 650
+instructions per received note: it checks the 16 pads). Pad channel lookups,
+menus and THRU queueing are negligible.
+
+The application runs the core at **144 MHz** (SysTick: processor clock,
+reload 2879 for the 20 µs tick); the simulator executes 100 M instructions
+per virtual second, so the real share is about the same or lower.
+
+The expensive moments are **flash writes** of our settings, not the code:
+each change programs 8 words, and every 64 changes the 2 KB sector is erased.
+The CPU stalls while the flash is busy (the code runs from it), so a DIN IN
+byte arriving during an erase can be lost, as with the stock program SAVE.
+This only happens while editing settings in the menus.

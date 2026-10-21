@@ -31,6 +31,7 @@ release, which bundles its own .NET). Use `RENODE=/path/to/renode` otherwise.
 | MIDI OUT (DIN) monitor | ✅ `midiOut Messages`, GUI panel |
 | MIDI IN (DIN): `usart1 WriteChar` into the firmware's receive buffer | ✅ |
 | MIDI OUT monitor: SysEx (`F0 … F7`) shown whole (fixed 2026-10-21: the `F7` used to reset it) | ✅ |
+| MIDI IN at the full DIN rate: bytes sent back to back (one every 320 µs or closer) are held by Renode's USART model and delivered late, with the stock firmware too; leave ≥ 1 ms between bytes in tests | ⚠️ |
 | MIDI bridge to JACK/PipeWire (`make gui JACK=1`) | ✅ |
 | USB MIDI | ⚪ not yet |
 
