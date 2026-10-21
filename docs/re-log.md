@@ -118,3 +118,122 @@ While writing these docs, a re-check of the image showed:
   and IRQ 67 (probably USB).
 - The Ghidra project is now built from `config/` by `make ghidra`, seeded with
   the 94 names from the 2025 project.
+
+## October 2026: Simulator (Renode)
+
+Built a Renode model of the board that runs the stock firmware unmodified
+([simulator.md](simulator.md)). Each blocker taught something about the
+hardware:
+
+- Renode rejected Artery's SVD (stray whitespace in `<access>`): we feed it a
+  sanitised copy.
+- SysTick ran at the wrong rate until the clock (CRM) model told the NVIC the
+  real core frequency.
+- The bootloader kept entering update mode: with an unmodelled key matrix, the
+  GPIO defaults looked like SHIFT + PROG SELECT held. Modelling the matrix
+  fixed it, and showed the power-up key combination.
+- The USB core reset wait needed a small OTG FS stub.
+- SPI bytes came out twice: Renode's SPI DMA connection re-entered the
+  transfer. Removing the DMA connections fixed it (the firmware's own DMA
+  setup is enough).
+- The OLED picture scrolled when a key was pressed: the SPI2 bus is shared
+  with another device (3-byte words, probably the CV DAC). Modelling the chip
+  select (PB12) fixed it.
+- Key matrix *(two wrong guesses)*: rows are not one-hot but a 4-bit decoder
+  (PC0–PC3, 13 rows), and there are 8 columns, not 6.
+- GPIO ports forget input levels on reset, so the models re-drive both edges.
+- The ADC DMA needs 16-bit accesses; the analogue controls sit behind
+  multiplexers selected by PB0–PB2.
+- LED brightness flickered until the PWM was measured over 64 latches.
+
+Confirmed on the real unit along the way: BANK A/B is a red/green LED,
+pad LEDs are blue/green/red per pad, and the pad order.
+
+GUI: PySide6. **6.12.0 crashes** (`none_dealloc`) on Python 3.11: pinned 6.11.2.
+Qt signals from the Renode monitor thread go through a queue drained by a timer.
+
+### MIDI bridge *(one painful dead end)*
+
+The first bridge used ALSA sequencer virtual ports (python-rtmidi). A test
+process killed with `kill -9` inside ALSA left half-closed sequencer clients
+and **deadlocked the kernel `snd-seq`** (Debian 6.1.0-53): every `aconnect`,
+then PipeWire, got stuck in D state; only a reboot helped. Even clean exits
+later hung in `seq_free_client`. Switched to **JACK through PipeWire**
+(`JACK-Client` under `pw-jack`; python-rtmidi was dropped because its wheel
+bundles its own libjack). Lesson: never SIGKILL ALSA MIDI processes.
+
+## October 2026: Bootloader and the updater
+
+Mapped the bootloader: boot decision (marker bytes, then SHIFT + PROG SELECT)
+and the USB HID update protocol, "UO"/"UI" packets C1–C4
+([bootloader.md](bootloader.md)). **No anti-rollback**: no version is ever
+compared.
+
+Flash in the simulator:
+
+- Flash operations did nothing at first: the firmware refuses addresses beyond
+  `F_SIZE` × 1 KB, and `F_SIZE` (`0x1FFFF7E0`) read 0. Added system memory
+  with `F_SIZE` = 256.
+- The reset macro reloaded the image, wiping what the firmware wrote: the
+  image is now loaded once.
+- With flash persisting, the application turned out to **format the user
+  programs at first boot** (16 sector erases at `0x0802F000`). The "free"
+  area is only `0x08025D4C`–`0x0802DFFF`.
+
+`tools/mpkflash.py` ([updater.md](updater.md)):
+
+- Simulator transport: packets are written straight into the bootloader's
+  receive ring in RAM. Each monitor round trip costs ~0.1 s, so 15 000 packets
+  took ~50 min one by one; batching 256 packets per monitor line brought it
+  to ~3 min.
+- `C3` replies and resets before the read index moves: done when either the
+  index moves or a reply appears.
+- The **application also answers `C4`, with `E4`**, and ignores the rest: a
+  safe way to tell the bootloader (`F4`) from the application.
+- Real unit (2026-10-21): `C4` probe in both modes, then a stock round-trip
+  flash, 14 976 packets in 31 s (2 ms per packet, the 1 ms USB poll each way).
+
+## October 2026: Screensaver mod
+
+- *(Dead end)* The "Akai Professional" string at `0x0802502C` is only the USB
+  manufacturer string (converted to UTF-16 for the descriptor).
+- *(Dead end)* A constant 150000 (5 min in 2 ms ticks?) belongs to the CC
+  edit code.
+- Rendering the constant data as OLED pages found two fonts and icons; the
+  end of the application is IAR-compressed init data, not bitmaps.
+- The framebuffer (`0x20003BD0`) is column-major, 4 bytes per column, which
+  led to the bitmap draw routine (`draw_bitmap_APP`) and the 128 × 32 logo at
+  `0x080248CC`. Two users: an endless display test (factory) and the
+  **screensaver** state machine: 15 000 001 ticks of 20 µs = 5 min, inverted
+  every 5 s.
+- Waiting 5 virtual minutes takes ~20 real minutes (the simulator runs ~4×
+  slower than real time), so the check script moves the "last activity" time
+  stamp back instead. First attempt failed: during the boot screen the state
+  machine resets that time stamp on its way to the normal state, so the
+  script must wait for state 2.
+- Same-size data patch, no code. Confirmed on the real unit (2026-10-21).
+
+## October 2026: Menus, programs and the first code patch
+
+- The Global menu (SHIFT + STOP) has **no menu table**: six entries
+  hard-coded in if-chains in a draw function and an encoder function, with
+  the last index (5) as a constant ([menus.md](menus.md)).
+- Its settings are **per program**, not global: bytes `0x10`–`0x1C` of the
+  0x14B-byte program. Mapped the program format and looked for free bytes:
+  every byte from `0x10` to `0x36` is used by the code (73 functions load the
+  program base), and the PC editor writes whole programs. **No free bytes**
+  ([programs.md](programs.md)).
+- Free RAM: filling RAM above the stack with `0xA5` before boot and exercising
+  the UI showed that nothing above `0x20005228` is ever touched (some app
+  literals look like addresses up there but are constants).
+- Patch system ([patching.md](patching.md)): C code linked at `0x08026000`,
+  stock functions called by their analysis names, stock functions replaced by
+  a `B.W` at their entry. Checked that GNU ld emits `BL` (not `BLX`) to
+  absolute Thumb symbols. Settings in our own sector as a log of 32-byte
+  records.
+- First patch: the Global menu reimplemented in C with a 7th entry, THRU
+  (setting only). In the simulator its screens for entries 1–5 are
+  pixel-identical to the stock ones. Confirmed on the real unit (2026-10-21).
+- Ghidra workflow: `make export` writes Ghidra's names back to
+  `symbols.csv`, which would undo renames made in the CSV. When renaming in
+  the CSV, rebuild the project (`build_project.py --force`) instead.
