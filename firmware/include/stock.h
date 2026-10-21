@@ -52,6 +52,12 @@ void transpose_apply_POSSIBLE_APP(void);
 
 void pad_edit_menu_draw_APP(uint8_t pad);
 
+/* Pad LEDs (docs/leds.md): the 8 physical pads show the current bank. */
+#define PAD_BANK        (*(volatile uint8_t *)0x20004DFE) /* 0 = A, 1 = B */
+#define PAD_SPECIAL_MODE (*(volatile uint8_t *)0x20004DCE) /* pads show something else */
+#define PAD_STATE_LIT   0 /* byte of the pad state record: 1 = lit by the stock code */
+void pad_led_show_APP(uint8_t pad, uint8_t lit);
+
 /* --- Current program (docs/programs.md) ----------------------------------- */
 
 #define PROGRAM ((volatile uint8_t *)0x20000668)

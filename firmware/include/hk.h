@@ -38,4 +38,9 @@ void hk_settings_set(uint32_t offset, uint8_t value);
 /* The MIDI channel (0-15) of a pad (0-15), from our settings or PadCH. */
 uint8_t hk_pad_channel(uint8_t pad);
 
+/* --- Pad LED feedback (pad_feedback.c) ------------------------------------ */
+
+/* A received MIDI message (status, data1, data2) from USB or DIN IN. */
+void hk_pad_feedback(const uint8_t *message);
+
 #endif

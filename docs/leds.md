@@ -74,6 +74,56 @@ To find out:
 - [ ] Where the firmware computes the 224-byte buffer from the colours (the
       hook for MIDI feedback on the pads).
 
+## Pad colours (stock)
+
+Pads have two colours each, rest and lit, chosen per pad in the pad edit menu
+(`Off C`, `On C`, [pads.md](pads.md)) as indexes into a 33-colour palette at
+`0x08024CE0` (`0x00RRGGBB` words):
+
+| Index | Colour | Index | Colour |
+|---|---|---|---|
+| 0 | off | 17 | cyan |
+| 1 | red (MPC pads at rest) | 19 | blue (MPC pads when hit) |
+| 6 | yellow | 25 | magenta |
+| 10 | green (Garageband pads) | 32 | white |
+
+The 8 physical pads show the current bank (`0x20004DFE`). Functions:
+
+| Address | Name | Role |
+|---|---|---|
+| `0x0801035A` | `pad_led_colour_APP` | Sets a physical pad's rest or lit colour (RGB) in its LED record (`0x200001B8` + pad × `0x20`) |
+| `0x08010384` | `pad_led_show_APP` | Shows a physical pad in its rest or lit colour (writes the PWM buffer) |
+| `0x0801A64C` | `bank_toggle_APP` | BANK A/B: reloads the 8 pads' colours and states from the new bank |
+| `0x08010120` | `led_set_level_APP` | Any single LED (e.g. transport) to a level 0–32 |
+
+Stock "feedback": notes `0x73`–`0x77` sent to the unit on its MIDI channel
+light the transport LEDs ([midi.md](midi.md)). Nothing lights the pads.
+
+## Pad LED feedback (hackai-mpk)
+
+`firmware/src/pad_feedback.c`: a **note on with a pad's own note and
+channel** (`Note#`, and `Chan` or `PadCH`) lights that pad in its `On C`
+colour; a note off (or velocity 0) gives it back to the stock code (`Off C`,
+or lit while held). While a pad is lit by MIDI, hitting it does not change its
+LED: the sender is in charge. Pads in PC or CC mode are not affected.
+
+- Messages from the computer (USB, port 1) and from DIN IN: a sequencer
+  sending its trigs as notes lights the pads in time.
+- Both banks: a pad of the other bank shows its state when the bank changes.
+- Not applied while the pads are in a special mode (`0x20004DCE`, e.g. the
+  sequencer), which draws its own colours.
+
+Hooks: wrap of `midi_message_handle_APP` (messages to the unit) and of
+`pad_led_show_APP` (forces "lit" for pads lit by MIDI, whoever redraws them);
+the DIN IN task calls the feedback directly when USB is connected, since DIN
+IN then goes to the computer instead of the message handler.
+
+Checked in the simulator (`sim/scripts/feedback_check.py`, part of `make
+mod-sim`): the stock firmware ignores the notes; note on 36 / channel 10
+lights pad 1 blue and another channel does nothing; hitting the lit pad keeps
+it blue; note off brings back red; a note for B1 leaves bank A alone and shows
+after BANK A/B; unlit pads still light when hit.
+
 ## In the simulator
 
 `sim/peripherals/ShiftRegisterLeds.cs` shifts the SPI bytes, latches them on

@@ -49,7 +49,7 @@ Early stage. The table shows the plan, not finished features.
 | Own entries in the Global menu (THRU on/off) | Firmware | ✅ Done, tested on a real unit (setting only) |
 | MIDI THRU on the MIDI OUT port | Firmware | 🟡 Works in the simulator |
 | Per-pad MIDI channel | Firmware | ✅ Done, tested on a real unit |
-| MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
+| MIDI feedback on the RGB pad LEDs | Firmware | 🟡 Works in the simulator |
 | New arpeggiator modes | Firmware | ⚪ Planned |
 | Internal battery + on-screen indicator | Hardware + firmware | ⚪ Planned |
 

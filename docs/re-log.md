@@ -429,3 +429,29 @@ was buffered, and was lost when `timeout` stopped it. With `stdbuf -oL` into
 a file: 364 messages in 40 seconds, pad 1 on channel 3, the others on 10,
 overlapping pads, every note off on its note on's channel, no hanging notes,
 aftertouch per pad too. Per-pad MIDI channel: done.
+
+**Pad LED feedback (same day, night).** Roadmap item 3. First the LED side:
+the pads' colours come from a 33-colour palette at `0x08024CE0` (1 red, 19
+blue, 32 white...), which explained an observation from 15 October: MPC pads
+are red at rest (Off C 1) and blue when hit (On C 19). Two functions do the
+work: one stores a pad's rest/lit colours, the other paints the pad into the
+PWM buffer. The stock firmware already reacts to incoming notes, but only for
+the transport LEDs (notes `0x73`–`0x77`) and the CV output; nothing lights
+the pads.
+
+Design chosen by the user: a pad lights when it receives its own note on its
+own channel (so a DAW echoing the pad, or the Digitakt playing that track,
+lights the right pad), in its On colour; from USB and DIN IN; and while lit
+by MIDI, hitting the pad does not change its LED.
+
+Implementation: two wraps. The message handler feeds our feedback first. The
+pad painting function forces "lit" for pads lit by MIDI, whoever calls it:
+hits, bank changes, colour edits. That covered BANK A/B for free: the bank
+change repaints all 8 pads through that function. One catch: with USB
+connected, DIN IN messages go to the computer and never reach the handler,
+so our DIN IN task calls the feedback itself. Special pad modes (the
+sequencer) paint fixed colours and are left alone.
+
+Simulator check, reading the LED outputs of the shift registers: all ten
+checks passed on the first run, and the full suite (menu, THRU, pad
+channels, feedback) is now 28 checks.

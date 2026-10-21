@@ -67,6 +67,7 @@ void hk_din_in_poll(void)
             for (int i = 0; i < 4; i++)
                 USB_IN_RING[at + i] = packet[i];
             USB_IN_WRITE = (at + 4) & 0x7F;
+            hk_pad_feedback(&packet[1]);      /* else: through midi_message_handle */
         } else {
             midi_message_handle_APP(&packet[1]);
         }

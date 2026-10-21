@@ -41,6 +41,9 @@ address,kind,name,type,status,notes
 0x0800F85C,func,gpio_bits_set,,named,
 0x0800F864,func,gpio_port_reset,,named,
 0x0800F86C,func,gpio_port_write,,named,
+0x08010120,func,led_set_level_APP,,understood,"Sets one LED output (record: output index, level) to a level 0-32 in the 32-phase PWM buffer 0x200041D0 (e.g. transport LEDs: 4 = dim, 0x20 = full)."
+0x0801035A,func,pad_led_colour_APP,,understood,"Sets the colour of a physical pad LED (pad 0-7, state 0 = rest / 1 = lit, r, g, b) in its record (0x200001B8 + pad*0x20: outputs at 0-2, rest colour 3-5, lit colour 6-8). Does not redraw."
+0x08010384,func,pad_led_show_APP,,understood,"Shows a physical pad LED (pad 0-7) in its rest (0) or lit (1) colour: scales the RGB and writes the PWM buffer."
 0x080109DA,func,midi_note_on_APP,,understood,"Queues a note on (channel, note, velocity) as a USB-MIDI event (ring 0x200048B0)."
 0x08010A0E,func,midi_note_off_APP,,understood,"Queues a note off (channel, note, velocity)."
 0x08010A42,func,midi_cc_APP,,understood,"Queues a control change (channel, controller, value)."
@@ -75,6 +78,7 @@ address,kind,name,type,status,notes
 0x080190B8,label,Pad_struct,,named,
 0x08019A74,func,pad_event_APP,,understood,"Pad hit/release/pressure handling. On a hit (0x08019F5C) copies PadCH (program +0x10) into the pad state (0x200045D8 + bank*0x60 + pad*0xC, byte 1); note on/off, CC, PC and aftertouch then use that channel."
 0x0801A4C4,func,pad_note_repeat_APP,,understood,"Retriggers held pads (note repeat): with argument 1 sets every pad state channel to PadCH (0x0801A564) and sends note on; otherwise note off."
+0x0801A64C,func,bank_toggle_APP,,understood,"BANK A/B: toggles the bank (0x20004DFE), its LED, and reloads the 8 pad LED colours and states of the new bank (fixed red/green when 0x20004DCE is set, a special pad mode)."
 0x0801A964,func,flush_bidimensional_matrix_POSSIBLE,,named,
 0x0801AB0C,label,bidimensional_matrix,,named,
 0x0801B76C,func,din_rx_count_APP,,understood,"Number of bytes in the DIN IN ring (128 bytes at 0x20004730, write 0x20004D74 by USART1_IRQHandler, read 0x20004D76)."
@@ -119,6 +123,7 @@ address,kind,name,type,status,notes
 0x080243B4,func,main,,named,
 0x08024628,func,hid_process_packet_APP,,understood,"Application HID handler: answers a 'UO' C4 packet with 'UI' E4 and ignores everything else (tells update tools the bootloader is not running)."
 0x080248CC,label,bitmap_akai_logo_APP,,understood,"Screensaver bitmap, 128x32: header 80 20, then 512 bytes, 4 per column. Replaced by tools/screensaver.py."
+0x08024CE0,label,pad_colour_palette_APP,,understood,"33 pad colours as 0x00RRGGBB words, indexed by the pad Off C / On C settings: 0 off, 1 red, 10 green, 19 blue, 32 white..."
 0x08024E94,func,__iar_data_init3,,named,IAR runtime: runs the RAM initialisers from a table.
 0x08024F1C,func,__cmain,,named,"IAR runtime: __low_level_init, __iar_data_init3, main, exit."
 0x08024F3A,func,__low_level_init,,named,"IAR default weak version, returns 1."

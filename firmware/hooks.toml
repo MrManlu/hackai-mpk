@@ -41,3 +41,13 @@ to = "hk_pad_hit_channel"             # firmware/src/pad_channel_hooks.S
 at = "0x0801A564"                     # note repeat: ldrb.w r0, [sp, #4] (PadCH)
 expect = "9d f8 04 00"
 to = "hk_pad_repeat_channel"
+
+# Pad LED feedback (firmware/src/pad_feedback.c).
+
+[[wrap]]
+function = "midi_message_handle_APP"  # 0x08011F84: messages to the unit
+with = "hk_midi_message_handle"
+
+[[wrap]]
+function = "pad_led_show_APP"         # 0x08010384: every pad LED update
+with = "hk_pad_led_show"
