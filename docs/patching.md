@@ -98,3 +98,7 @@ yet: the MIDI THRU itself is the next step.
 - entry 7 appears and can be switched on with the encoder;
 - the record reaches the settings sector in flash (`48 4B 4D 31 01 …`);
 - after a reset the menu still shows THRU on.
+
+**Confirmed on a real unit (2026-10-21)**, combined with the screensaver mod:
+entry 7 appears, switches on with the encoder, stays on after unplugging the
+unit, and entries 1–6 behave as before.

@@ -45,8 +45,8 @@ Early stage. The table shows the plan, not finished features.
 | Simulator (stock firmware in Renode, panel GUI) | Tooling | 🟡 Boots; OLED, LEDs and buttons work |
 | Safe flashing over USB (`tools/mpkflash.py`) | Foundation | ✅ Done, tested on a real unit |
 | Custom screensaver image (`make screensaver`) | Mod (data) | ✅ Done, tested on a real unit |
-| Patch system: our C code + hooks (`make mod`) | Foundation | 🟡 Works in the simulator |
-| Own entries in the Global menu (THRU on/off) | Firmware | 🟡 Works in the simulator |
+| Patch system: our C code + hooks (`make mod`) | Foundation | ✅ Done, tested on a real unit |
+| Own entries in the Global menu (THRU on/off) | Firmware | ✅ Done, tested on a real unit (setting only) |
 | MIDI THRU on the MIDI OUT port | Firmware | ⚪ Planned |
 | Per-pad MIDI channel | Firmware | ⚪ Planned |
 | MIDI feedback on the RGB pad LEDs | Firmware | ⚪ Planned |
